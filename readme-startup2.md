@@ -1,45 +1,57 @@
 # Startup 2: IssueReady — Validated GitHub issue triage
 
-**Inspired by:** [OneCLI](https://www.ycombinator.com/companies/onecli), which describes agents working across business applications with externally enforced permissions, protected credentials, and logged actions. IssueReady narrows that approach to preparing reproducible bug reports for small software teams. Source reviewed October 15, 2026.
+**Inspired by:** [OneCLI](https://www.ycombinator.com/companies/onecli). We're taking its approach to agents working across applications with controlled permissions and applying it to bug triage. IssueReady is our own project idea, separate from OneCLI.
 
-**Proposed product:** Convert an incomplete GitHub bug report into an evidence-backed reproduction packet, or a precise request for missing information. This is an independent proposal, not an affiliation with OneCLI. Founder skill and customer-access assumptions require verification.
+**Our idea:** We want to turn incomplete GitHub bug reports into reproducible examples, with the commands and logs to back them up. When we can't reproduce a bug, we'll return specific questions about the missing information.
 
-## 1. Solves one problem extremely well
+## 1. Solves one problem extremely well.
 
-Reduce the time maintainers spend figuring out whether a newly reported bug can be reproduced. The MVP supports JavaScript/TypeScript repositories with an existing containerized test command. It produces an environment description, reproduction steps, and captured results. It excludes autonomous fixes, production incident response, and general coding assistance. Measure maintainer minutes per accepted reproduction packet against manual triage.
+Maintainers spend too much time working out what a bug report actually means and whether they can reproduce it. We'll start with JavaScript/TypeScript repositories that already have a containerized test command. Each result will include the environment, reproduction steps, and captured output.
 
-## 2. You know the target customers or have direct access to them
+We're keeping fixes and production incident response outside the first version. We'll measure whether our tool reduces the time a maintainer spends getting to an accepted reproduction.
 
-Target maintainers of small open-source projects and student software teams who already handle GitHub issues. A credible access route is a project the founder contributes to or a local developer group; neither relationship is assumed to exist. Secure three consenting maintainers and ten historical issues per repository before product development. This criterion is met when those maintainers provide repository access and commit to reviewing pilot results, rather than merely being reachable online.
+## 2. You know the target customers or have direct access to them.
 
-## 3. You are familiar with, or can quickly learn, most required infrastructure
+Our first users would be maintainers of small open-source projects and software teams that handle GitHub issues. We plan to recruit through projects we contribute to and local developer groups. We still need to confirm those connections.
 
-Use a GitHub App, a web dashboard, a Python orchestration worker, PostgreSQL, a hosted coding model, and isolated ephemeral execution environments. GitHub webhooks, scoped installation tokens, queues, and test-runner integration are learnable extensions of ordinary web development. Sandboxing untrusted repository code is the largest infrastructure gap: use a managed isolated execution service or dedicated disposable VMs, not a shared application container. Demonstrate isolation and teardown before accepting external repositories.
+Before building the full workflow, we want three maintainers to give us repository access and ten historical issues each. We'll ask them to review our results and compare them with their normal triage process.
 
-## 4. Reimagines the problem space to make it significantly better
+## 3. You are familiar with (or can quickly learn) most of the required infrastructure.
 
-Move triage from reading an AI summary to inspecting a replayable experiment. For a report saying “export breaks,” the system identifies missing inputs, attempts a minimal reproduction, and supplies a concrete command and observed output. If it cannot reproduce the issue, it says so through a fixed status field and proposes validated clarification questions. The advantage to test is fewer maintainer back-and-forth messages, not more generated prose.
+We'd use a GitHub App, web dashboard, Python worker, PostgreSQL, and a hosted coding model. The worker would process queued issues and run candidate reproductions in disposable, isolated environments.
 
-## 5. An LLM/Generative model is core to the solution
+The biggest technical challenge is running untrusted repository code safely. We'll use a managed sandbox service or dedicated disposable VMs, with no credentials or production access. We need to demonstrate isolation and cleanup before accepting outside repositories.
 
-The LLM maps ambiguous issue language to likely code paths, constructs candidate test harnesses, and adapts reproduction attempts to runtime errors. Static templates cannot infer this bridge between an issue description and a particular repository. Generation is central to building the experiment; execution provides the evidence.
+Our three developers can split the work across the GitHub/dashboard experience, backend and sandbox infrastructure, and model generation and validation. We'll integrate a complete test-repository workflow early.
 
-## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator
+## 4. Reimagines the problem space to make it significantly better.
 
-All candidate scripts, findings, and questions remain internal until approved. A validator checks schema, repository paths, source references, credential patterns, and permitted operations. Candidate code must pass policy checks before running in an isolated environment with no credentials, no production access, bounded resources, and restricted networking.
+We want maintainers to receive an experiment they can rerun. For a report like “export breaks,” we'd identify missing inputs, attempt a minimal reproduction, and return the command and observed output. If reproduction fails, the result will say so and include validated clarification questions.
 
-The worker reruns a reproduction from a clean snapshot and attaches its command, commit SHA, environment digest, exit code, and log references. A claimed failure must actually occur; a claim that a regression test isolates a bug requires a control run that passes. Otherwise label the result only as an observed failure. Render findings from verified structured evidence and fixed templates. Validate any generated clarification text for relevance and unsupported assumptions; uncertain questions require maintainer-side pilot reviewer validation before delivery. The dashboard and GitHub publisher accept only approved artifact hashes. This gate includes generated code offered for download.
+We'll compare the number of follow-up messages and time spent with manual triage to see whether this approach helps.
 
-## 7. Self-Correction Loop: Validation errors automatically feed back into the LLM
+## 5. An LLM/Generative model is core to the solution (no generic "chatbot in a sidebar").
 
-Feed errors such as `MISSING_PATH`, `NONREPRODUCIBLE_RESULT`, or `FORBIDDEN_NETWORK_CALL`, along with sanitized execution logs, back into the model. Automatically revise and revalidate for up to three total attempts under a fixed runtime budget. Every revision reruns policy checks and clean execution. Exhaustion returns a fixed “reproduction not established” status; rejected code and prose remain inaccessible. Human reviewer rejection also triggers this correction workflow rather than manual copy editing.
+The model connects an ambiguous report to likely code paths, writes candidate test harnesses, and revises them using execution errors. We need that flexibility because each report and repository is different. The model proposes the experiment; execution supplies the evidence.
 
-## 8. Deployability: If built, you are able to fully deploy it
+## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator.
 
-Host the dashboard/API, database, queue, and worker on managed infrastructure; run repository workloads in a separate sandbox account. Store GitHub credentials in a server-side vault, grant repository-scoped permissions, and keep secrets out of model prompts and execution sandboxes. Initially publish approved packets only to the dashboard; optional GitHub comments require explicit repository-owner enablement. Add webhook verification, tenant isolation, audit logs, budget caps, backups, and a job cancellation switch.
+Scripts, findings, and clarification questions stay internal until validation passes. We'll check their structure, repository paths, source references, credential patterns, and permitted operations. Code must pass these checks before it runs in a sandbox with restricted networking and resource limits.
 
-Deployment acceptance requires processing an installed test repository, blocking a prohibited script, rejecting a fabricated finding, and cleaning up every sandbox after a timeout. A solo builder with web and container experience can deploy this bounded MVP, conditional on proving sandbox isolation and obtaining GitHub/model/hosting accounts.
+We'll rerun each reproduction from a clean snapshot and record the command, commit SHA, environment digest, exit code, and logs. We won't call something a reproduced failure unless it actually happens. To claim a test isolates a bug, we'll also require a passing control run; otherwise we'll label it an observed failure.
 
-## Smallest paid pilot
+We'll render findings from verified data and fixed templates. Generated questions must be relevant and avoid unsupported assumptions; uncertain questions go to a designated maintainer reviewer before delivery. The dashboard, downloads, and any GitHub publishing will accept only approved artifact hashes.
 
-Replay 30 historical issues for three maintainers, then run on newly submitted issues with permission. Test a proposed $49 per repository per month. Continue if at least half of eligible reports yield accepted reproduction packets and median maintainer triage time falls by 30%. Treat these as experiment thresholds, not forecasted performance.
+## 7. Self-Correction Loop: Validation errors must automatically feed back into the LLM to retry/correct.
+
+Validation errors such as `MISSING_PATH`, `NONREPRODUCIBLE_RESULT`, and `FORBIDDEN_NETWORK_CALL` will go back to the model with sanitized logs. We'll allow three total attempts within a fixed runtime budget, repeating policy checks and clean execution each time.
+
+Reviewer rejections use the same loop. If all attempts fail, we'll return a fixed “reproduction not established” status and keep rejected code and text hidden.
+
+## 8. Deployability: If built, you are able to fully deploy it.
+
+We'll host the dashboard, API, database, queue, and worker on managed infrastructure, with repository execution in a separate sandbox account. GitHub credentials will stay in a server-side vault and out of prompts and execution environments.
+
+We'll start by showing approved results in the dashboard. GitHub comments will require the repository owner's explicit enablement. We'll also add webhook verification, tenant isolation, audit logs, spending limits, backups, and job cancellation.
+
+Before release, we'll process a test repository, block a prohibited script, reject a fabricated finding, and confirm cleanup after timeouts. Our team will own deployment; sandbox isolation and access to GitHub, model, and hosting accounts are still prerequisites.

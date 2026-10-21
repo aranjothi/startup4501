@@ -1,47 +1,59 @@
 # Startup 5: KitchenTicket — Verified order intake for shared kitchens
 
-**Inspired by:** [FoodCourt](https://www.ycombinator.com/companies/foodcourt), which describes a multi-brand virtual restaurant model spanning ordering, production, and delivery. KitchenTicket focuses on one coordination problem in that model: translating messy customer orders into accurate kitchen tickets. Source reviewed October 15, 2026.
+**Inspired by:** [FoodCourt](https://www.ycombinator.com/companies/foodcourt). Its multi-brand kitchen model got us thinking about how staff turn informal customer messages into accurate orders across several menus. We're proposing our own software tool, with no affiliation with FoodCourt or access to its operations.
 
-**Proposed product:** Convert text or uploaded voice orders into validated, multi-brand tickets for small delivery kitchens. Begin with one consenting kitchen and its existing menu. This is an independent software proposal, not an affiliation with FoodCourt or a claim of access to its operations.
+**Our idea:** Staff would paste a text order or upload a voice recording, and KitchenTicket would turn it into a validated ticket using the kitchen's current menu. We'd start with one participating kitchen.
 
-## 1. Solves one problem extremely well
+## 1. Solves one problem extremely well.
 
-Prevent transcription and item-selection errors when staff enter informal orders across several kitchen brands. The MVP maps requests to an approved catalog, resolves missing options, and produces one consolidated ticket. It excludes running kitchens, purchasing ingredients, taking payments, dispatching drivers, and predicting delivery times. Track staff entry time and corrected tickets per 100 orders against the kitchen's existing process.
+Informal orders can be hard to enter accurately when several brands have different items and options. We want to reduce transcription and item-selection errors.
 
-## 2. You know the target customers or have direct access to them
+The first version will map requests to an approved catalog, ask about missing options, and produce one combined ticket. Payments, purchasing, driver dispatch, delivery estimates, and running a kitchen are outside our scope. We'll compare staff entry time and corrected tickets per 100 orders with the kitchen's existing process.
 
-Target owner-operated delivery kitchens that accept manual text or voice orders and run two or more menus. Direct access requires an operator willing to share a current menu and anonymized historical orders, followed by a supervised pilot. No such relationship is assumed. Recruit through local food entrepreneurs or an existing personal connection, in the geography the founder can actually serve. This criterion is satisfied after one operator agrees to weekly observation and pilot use; access to African kitchens is not inferred from FoodCourt's market.
+## 2. You know the target customers or have direct access to them.
 
-## 3. You are familiar with, or can quickly learn, most required infrastructure
+We'd target owner-operated delivery kitchens that accept manual text or voice orders and run at least two menus. We plan to recruit through local food entrepreneurs or personal connections in an area we can visit. We haven't secured an operator yet.
 
-Use a tablet-friendly web app, Python API, PostgreSQL, a hosted transcription model, an LLM for structured extraction, and a deterministic order rules engine. Staff paste messages or upload audio with customer permission, avoiding a messaging-platform integration at launch. Catalog management, unit tests for pricing rules, and database transactions are standard application work. Learn kitchen-specific modifiers and order states through observation. Basic web development competence is an assumption to verify through a working catalog-to-ticket prototype.
+We need one operator willing to share a current menu and anonymized historical orders, let us observe the workflow weekly, and try a supervised prototype. We'll use those sessions to learn how staff handle modifiers, corrections, and unclear requests.
 
-## 4. Reimagines the problem space to make it significantly better
+## 3. You are familiar with (or can quickly learn) most of the required infrastructure.
 
-Treat informal ordering as a compilation task: natural language becomes a typed order that must satisfy a catalog and transaction rules before it can become a kitchen ticket. “Two chicken meals, one without the side” produces exact item/modifier IDs or a targeted clarification. Multiple brands share one order envelope, reducing repeated data entry. Compare accuracy and handling time with manual transcription; the expected advantage remains a hypothesis until tested.
+We'd use a tablet-friendly web app, Python API, PostgreSQL, hosted transcription, an LLM for structured order extraction, and a rules engine for checking orders. Staff would paste messages or upload audio with customer permission, so we wouldn't need a messaging-platform integration to start.
 
-## 5. An LLM/Generative model is core to the solution
+Our three developers can divide the staff interface and catalog tools, backend and order transactions, and extraction and validation. We'll first build a working path from a sample order to a checked ticket. Kitchen-specific modifiers and order states will come from observation with the operator.
 
-The model interprets paraphrases, mixed item descriptions, and conversational corrections, then proposes catalog-linked line items. A transcription model processes voice input. Fixed keyword matching cannot reliably resolve “same meal as before, but make the second one mild” against authorized order context. Pricing, stock, and final ticket rendering remain deterministic.
+## 4. Reimagines the problem space to make it significantly better.
 
-## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator
+We want staff to get exact catalog items and modifiers from everyday language. “Two chicken meals, one without the side” should produce the correct item IDs and options, or a specific question if the menu doesn't support that request.
 
-Keep raw transcription, extracted orders, and generated clarification questions internal. Validators enforce schema; valid item and modifier IDs; allowed combinations; positive integer quantities; current catalog versions; source-span evidence for each requested item; and available stock. The rules engine computes all prices, taxes, fees, and totals from operator-configured rules rather than trusting model arithmetic.
+Multiple brands would share one order, reducing repeated entry. We'll test accuracy and handling time against manual transcription before claiming an improvement.
 
-Ambiguous or low-confidence voice spans require an internal staff verifier to compare the recording with the proposed interpretation before anything generated is shown to the ordering customer or kitchen recipient. During the MVP, this verifier checks every interpretation against its original input. The verifier is a designated validator role; ordinary recipients cannot access pending drafts. Never infer allergy safety from a model response. Requests involving allergies or unknown ingredients route to the operator's established handling process through fixed notices.
+## 5. An LLM/Generative model is core to the solution (no generic "chatbot in a sidebar").
 
-Only approved structured data enters the ticket renderer. Generated questions and confirmations also pass the gate. Recheck stock and price versions transactionally at submission; a passing language check cannot reserve inventory.
+The model would interpret paraphrases, mixed item descriptions, and corrections, then propose catalog-linked line items. A transcription model would handle voice input. For a request like “same meal as before, but make the second one mild,” we'd supply the authorized order context.
 
-## 7. Self-Correction Loop: Validation errors automatically feed back into the LLM
+Prices, stock checks, and ticket rendering would stay in deterministic application code.
 
-Send structured failures such as `UNKNOWN_MENU_ITEM`, `INVALID_MODIFIER`, or `MISSING_QUANTITY` back to the model with the current catalog subset and original order. Automatically retry and revalidate up to three total generation attempts. Staff-verifier rejections also enter this loop. If information is genuinely absent, generate and validate a clarification rather than guessing. Exhaustion produces a fixed manual-intake status and no kitchen ticket. A customer response restarts extraction and validation against the updated order context.
+## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator.
 
-## 8. Deployability: If built, you are able to fully deploy it
+Raw transcripts, extracted orders, and generated clarification questions stay internal until checked. Validators will enforce the expected structure, valid item and modifier IDs, allowed combinations, positive integer quantities, current catalog versions, source references, and available stock. The rules engine will calculate prices, taxes, fees, and totals using the operator's configured rules.
 
-Deploy the web app, API, worker, review queue, and managed database with HTTPS, staff roles, private audio storage, retention controls, secret management, monitoring, and backups. Use idempotency keys to prevent duplicate tickets and a durable order-state machine to distinguish pending, validated, confirmed, and submitted states. Network failure leaves a visible pending status and a manual-entry path. Initially use an on-screen kitchen queue, avoiding printer and point-of-sale dependencies.
+For the first version, a designated staff verifier will compare every interpretation with the original message or recording before it reaches the customer or kitchen recipient. That review is especially important for unclear audio. Other recipients won't have access to pending drafts.
 
-Verify a real menu, an invalid modifier, an ambiguous voice order, an automatic correction, stale-stock rejection, and duplicate submission prevention in production. A solo web developer can fully deploy this software MVP, conditional on operator access and hosting/model accounts. Operating a food business or delivery fleet is outside this startup's deployment scope.
+We won't use model output to decide allergy safety. Allergy requests and unknown ingredients will follow the operator's established process through fixed notices.
 
-## Smallest paid pilot
+Only approved data can reach the ticket renderer. Questions and confirmations must pass validation too. We'll recheck stock and price versions in a database transaction when the order is submitted.
 
-Replay 100 anonymized historical orders, then run one week beside manual intake without automatically submitting tickets. Test a proposed $50 monthly fee per kitchen after accuracy is demonstrated. Move to live use only when every pilot ticket has passed validation and operator confirmation. Continue if entry time falls by 30%, corrected-ticket frequency improves, and the operator will pay enough to cover inference and verification labor.
+## 7. Self-Correction Loop: Validation errors must automatically feed back into the LLM to retry/correct.
+
+Errors such as `UNKNOWN_MENU_ITEM`, `INVALID_MODIFIER`, and `MISSING_QUANTITY` will go back to the model with the original order and relevant current catalog entries. We'll allow three total attempts and validate each one. Staff-verifier rejections will use the same loop.
+
+When information is missing, we'll generate and validate a clarification question. If all attempts fail, we'll show a fixed manual-intake status and create no ticket. A customer's answer will restart extraction and validation with the updated context.
+
+## 8. Deployability: If built, you are able to fully deploy it.
+
+We'll deploy the app, API, worker, review queue, and database with HTTPS, staff roles, private audio storage, retention controls, secret management, monitoring, and backups. We'll use idempotency keys to prevent duplicate tickets and explicit states for pending, validated, confirmed, and submitted orders.
+
+If the network fails, staff will see a pending status and have a manual-entry option. We'll start with an on-screen kitchen queue, leaving printer and point-of-sale integrations for later.
+
+Before release, we'll test a real menu, invalid modifiers, unclear audio, automatic correction, stale stock, and duplicate submissions. Our team will own the software deployment. We still need operator access and hosting and model accounts.

@@ -1,45 +1,55 @@
 # Startup 3: ClipRecall — Spanish listening practice from creator clips
 
-**Inspired by:** [Doomersion](https://www.ycombinator.com/companies/doomersion), which describes a short-video language-learning feed matched to the learner's level. ClipRecall builds on that format with a focused comprehension-and-recall loop. Source reviewed October 15, 2026.
+**Inspired by:** [Doomersion](https://www.ycombinator.com/companies/doomersion). We like the idea of matching short language-learning videos to a learner's level. Our idea adds practice that checks whether people understand and remember what they hear.
 
-**Proposed product:** Turn licensed, short Spanish videos into five-minute listening lessons with validated captions, contextual explanations, and retrieval questions. This is an independent proposal. Customer access and founder infrastructure knowledge are assumptions to establish.
+**Our idea:** We'd turn licensed Spanish clips into five-minute listening lessons with checked captions, phrase explanations, and recall questions. ClipRecall would be our own project.
 
-## 1. Solves one problem extremely well
+## 1. Solves one problem extremely well.
 
-Help intermediate Spanish learners understand and remember everyday phrases in fast native speech. The MVP covers one language, adult learners, and clips under a minute. It excludes general tutoring, pronunciation scoring, and an unrestricted social feed. Measure delayed comprehension of previously missed phrases on new recordings, rather than minutes spent scrolling.
+Intermediate Spanish learners can recognize a phrase in subtitles and still miss it in fast speech. We want to help them understand and remember everyday expressions across different speakers.
 
-## 2. You know the target customers or have direct access to them
+We'll start with adult learners, Spanish only, and clips under a minute. General tutoring, pronunciation scoring, and an unrestricted social feed are outside the first version. We'll measure comprehension of previously missed phrases in new recordings after a delay.
 
-Start with adult learners in one Spanish conversation club or college language society. Access could come through an instructor or club organizer, but no existing relationship is asserted. Recruit 15 consenting learners and one bilingual reviewer through a cooperating organizer before building the recommendation system. This criterion is satisfied when the organizer provides recurring pilot access and learners complete a baseline listening task.
+## 2. You know the target customers or have direct access to them.
 
-## 3. You are familiar with, or can quickly learn, most required infrastructure
+We'd start with adults in a Spanish conversation club or college language society. We plan to contact instructors and organizers, but we haven't secured a group yet.
 
-Use a mobile-friendly web app, private video storage, a media transcoding worker, PostgreSQL, a hosted transcription model, and an LLM producing structured lesson objects. A simple rules-based scheduler handles spaced review. The main new skills are caption alignment and media processing, which can be prototyped with a small clip library. Avoid training a recommendation model or building native apps in the MVP. This assumes basic web/API development competence, to be confirmed through a working lesson prototype.
+We want 15 learners and one bilingual reviewer to try the first lessons. Before building recommendations, we'll run a baseline listening task and arrange recurring sessions so we can see whether learners improve.
 
-## 4. Reimagines the problem space to make it significantly better
+## 3. You are familiar with (or can quickly learn) most of the required infrastructure.
 
-Each entertaining clip becomes an observable learning cycle: listen without captions, answer one question, inspect a phrase explanation, then retrieve that phrase later in a different licensed clip. For example, a missed colloquial expression returns in another speaker's sentence several days later. Personalization follows demonstrated comprehension and retention, not watch time alone. Compare delayed recall against the same clips with static subtitles to establish whether the extra loop helps.
+We'd use a mobile-friendly web app, private video storage, a media-processing worker, PostgreSQL, hosted transcription, and an LLM that returns structured lesson data. A simple rules-based scheduler would handle spaced review.
 
-## 5. An LLM/Generative model is core to the solution
+Caption timing and media processing are the main areas we'd need to learn. We'll test them with a small clip library before expanding. We don't need a trained recommendation model or native apps for this version.
 
-The model identifies phrase-level misunderstandings and generates level-appropriate explanations, contextual translations, and targeted questions. It adapts the lesson to what each learner missed. The generated instructional layer turns a video library into personalized practice; it is not a separate chat feature.
+Our three developers can divide the work across the lesson interface, media and backend services, and lesson generation and validation. We'll first get one complete lesson working from upload through review and playback.
 
-## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator
+## 4. Reimagines the problem space to make it significantly better.
 
-Only creator-owned or explicitly licensed clips enter the library. A bilingual reviewer first verifies the canonical transcript and translations used as source material; transcription output is treated as generated content and cannot bypass review. Every generated explanation, caption variant, question, answer key, and personalized recap must pass schema checks, exact transcript-span checks, timestamp bounds, vocabulary constraints, and a separate bilingual semantic review.
+We want each clip to lead to practice: listen without captions, answer a question, review a missed phrase, then encounter it later in another licensed clip. A colloquial expression someone misses today could return in a different speaker's sentence several days later.
 
-An independent model may flag semantic errors, but a bilingual human validates every new instructional artifact in the MVP before publication, including personalized variants. Questions must have one supported answer and no distractor that is also valid in context. The lesson API exposes only approved immutable versions. There is no raw streaming. This trades instant novelty for an enforceable quality gate; automated checks cannot guarantee translation accuracy alone.
+We'll use comprehension and recall to choose what comes next. To test the benefit, we'll compare delayed recall with learners using the same clips and static subtitles.
 
-## 7. Self-Correction Loop: Validation errors automatically feed back into the LLM
+## 5. An LLM/Generative model is core to the solution (no generic "chatbot in a sidebar").
 
-Machine and reviewer errors become structured feedback such as `MEANING_CHANGED`, `AMBIGUOUS_ANSWER`, or `OUT_OF_LEVEL_VOCABULARY`, with transcript references. The worker automatically regenerates the failed lesson component and reruns the entire validation pipeline, including human approval where needed. Limit generation to three total attempts. Pending or exhausted items are withheld; the learner receives an already approved lesson or a fixed availability notice. Rejected lessons are never shown as drafts.
+The model would generate explanations, contextual translations, and questions based on the phrases a learner missed. That lets us adapt lessons to individual mistakes while keeping the original clip as the source material.
 
-## 8. Deployability: If built, you are able to fully deploy it
+## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator.
 
-Deploy the web app, API, queue, lesson worker, review console, database, and private media storage on managed hosting. Serve approved videos using signed URLs, retain licensing metadata, and implement account deletion, access controls, monitoring, backups, and media/model cost limits. Keep learner-specific artifacts scoped to their owner. Check production using a licensed clip, a deliberately incorrect translation, a corrected-and-approved lesson, and a second learner account that cannot access private progress.
+We'll only use creator-owned or explicitly licensed clips. A bilingual reviewer will verify each source transcript and translation before we use it to build lessons. Automatically generated transcription won't skip that review.
 
-A solo web developer can deploy the full software MVP without social-platform scraping or app-store approval. Creator licenses, a paid bilingual reviewer, and hosting/model accounts are necessary launch dependencies. The business must support the review workload before expanding personalized content generation.
+Every generated caption variant, explanation, question, answer key, and recap will pass checks for structure, transcript references, timestamp bounds, and vocabulary level. A bilingual human will also check the meaning of every new instructional item, including personalized variants. Another model can flag problems, but it won't replace that review.
 
-## Smallest paid pilot
+Questions must have one supported answer, with no alternative that is also correct in context. The API will serve approved, fixed versions only, with no raw model streaming. We'll keep the content library small enough to support this review workload.
 
-Use 30 licensed clips, 15 learners, and a two-week delayed-recall experiment. Test a proposed $8 monthly subscription. Proceed if learners return for at least three sessions weekly, recall improves over the subtitle-only comparison, and paid conversion covers expected review and inference costs. These are pilot targets, not measured outcomes.
+## 7. Self-Correction Loop: Validation errors must automatically feed back into the LLM to retry/correct.
+
+We'll send errors such as `MEANING_CHANGED`, `AMBIGUOUS_ANSWER`, and `OUT_OF_LEVEL_VOCABULARY` back to the model with the relevant transcript references. It will regenerate the failed component, and we'll repeat all checks, including human review.
+
+We'll allow three total attempts. While a lesson is pending, or if it still fails, the learner will get an approved lesson or a fixed availability message. Rejected drafts won't appear in the app.
+
+## 8. Deployability: If built, you are able to fully deploy it.
+
+We'll deploy the app, API, queue, lesson worker, review console, database, and private media storage on managed hosting. We'll use signed video URLs, keep licensing records, and add account deletion, access controls, monitoring, backups, and cost limits. Private progress and personalized lessons will stay scoped to their owner.
+
+Before release, we'll test a licensed clip, reject an incorrect translation, publish a corrected lesson, and verify that a second account can't access another learner's progress. Our team can own the software deployment. We still need creator licenses, a paid bilingual reviewer, and hosting and model accounts before launch.

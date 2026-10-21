@@ -1,45 +1,57 @@
 # Startup 4: LocalBrief — Creator campaign briefs for neighborhood cafés
 
-**Inspired by:** [TryNearby](https://www.ycombinator.com/companies/trynearby), which describes connecting local businesses with nearby creators and using agents for matching and visit coordination. LocalBrief narrows the opportunity to turning an owner's promotion into a feasible, accurate creator campaign brief. Source reviewed October 15, 2026.
+**Inspired by:** [TryNearby](https://www.ycombinator.com/companies/trynearby). We're interested in how local businesses coordinate with nearby creators. Our idea focuses on the work of preparing an accurate brief and finding a filming time that works for both sides.
 
-**Proposed product:** A café owner supplies an offer, available filming slots, and a budget. The system produces validated creator-specific briefs and a proposed visit schedule using a small roster of opted-in local creators. This is an independent proposal; customer relationships and technical competence must be verified.
+**Our idea:** A café owner enters an offer, filming availability, and budget. We'd use that information to create reviewed briefs and proposed visit schedules for a small group of local creators who have opted in. LocalBrief would be an independent project; we don't have access to TryNearby's network.
 
-## 1. Solves one problem extremely well
+## 1. Solves one problem extremely well.
 
-Eliminate the repeated work of explaining a café promotion to local creators. The MVP produces a filming brief, required factual details, deliverables, and available visit slots for one neighborhood. It excludes automated social posting, creator payments, video generation, and a national creator marketplace. Measure owner minutes spent preparing and clarifying each accepted brief.
+Café owners repeat the same promotion details to several creators and spend time correcting misunderstandings. We want to reduce that work.
 
-## 2. You know the target customers or have direct access to them
+We'll start in one neighborhood and produce filming briefs, factual details, deliverables, and available visit slots. Social posting, payments, video generation, and a national marketplace are outside the first version. We'll measure the time owners spend preparing and clarifying each accepted brief.
 
-Target independent café owners and small food creators in one walkable commercial district. Owners are accessible through in-person visits, and creators can opt in through a local creative group; these are recruitment routes, not proof of existing access. Before building, get three owners and five creators to participate in one manually coordinated campaign. This criterion becomes satisfied when both sides share real constraints and commit to testing the briefs. Do not assume access to TryNearby's network.
+## 2. You know the target customers or have direct access to them.
 
-## 3. You are familiar with, or can quickly learn, most required infrastructure
+Our first users would be independent café owners and small food creators in one walkable commercial district. We plan to approach owners in person and recruit creators through a local creative group. We still need to confirm participation.
 
-Use a web dashboard, Python API, PostgreSQL, a hosted LLM, background jobs, and a transactional email provider. Creators maintain their own availability in the app, avoiding social-platform scraping and calendar integrations. Store owner-approved facts as structured fields. The largest learning tasks are scheduling constraints, versioned approvals, and permission-controlled delivery, all feasible with ordinary web development experience and a small prototype.
+Before building the app, we'll try coordinating one campaign manually with three owners and five creators. That should show us their actual scheduling constraints and what information belongs in a useful brief.
 
-## 4. Reimagines the problem space to make it significantly better
+## 3. You are familiar with (or can quickly learn) most of the required infrastructure.
 
-Make the campaign brief a reusable executable specification. The café enters its actual offer once; each creator gets a tailored shot plan consistent with that offer, their declared format, and the café's filming constraints. If an owner changes a price or filming window, the system invalidates affected briefs and generates validated replacements. Test fewer clarification messages and fewer incorrect promotion details against ordinary email coordination.
+We'd use a web dashboard, Python API, PostgreSQL, hosted LLM, background jobs, and transactional email. Creators would enter their availability directly, and owners would approve the facts we store about each offer.
 
-## 5. An LLM/Generative model is core to the solution
+The main technical work is scheduling, versioned approvals, and controlling who can see and receive a brief. Our three developers can split the owner/creator interface, backend and scheduling, and generation and validation. We'll test those pieces together with a small campaign before expanding.
 
-The LLM transforms an owner's informal campaign goal and a creator's sample style into a concrete shot sequence, caption draft, and deliverable checklist. It can adapt the same verified facts to different creator formats. Deterministic scheduling handles availability; generation handles the creative translation that makes the brief useful.
+## 4. Reimagines the problem space to make it significantly better.
 
-## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator
+An owner should enter an offer once and get a suitable brief for each creator. The shot plan would reflect the creator's declared format while preserving the café's prices, offer terms, and filming constraints.
 
-Treat briefs, suggested matches, captions, scheduling explanations, and notifications as gated artifacts. Deterministic validators check every price, address, date, offer condition, creator ID, deliverable, budget total, and slot against versioned owner/creator records. A separate semantic check flags unsupported promotional claims and conflicts with stated filming preferences. For the MVP, an internal human reviewer validates creative suitability and factual completeness before any generated artifact is visible to an owner or creator.
+If an owner changes a price or filming window, we'll invalidate affected briefs and generate checked replacements. We'll compare clarification messages and incorrect promotion details with ordinary email coordination.
 
-Build required sponsorship wording into a human-reviewed template and verify its presence in each caption; validation does not establish compliance for all platforms or jurisdictions. The system never invents personal endorsements or promises a positive review. The UI and sender read only approved artifact versions. Owner approval to commission a campaign happens after this internal validation; it is distinct from the validator gate. Editing a source fact or candidate artifact invalidates approval.
+## 5. An LLM/Generative model is core to the solution (no generic "chatbot in a sidebar").
 
-## 7. Self-Correction Loop: Validation errors automatically feed back into the LLM
+The model would turn an informal campaign goal and a creator's sample style into a shot sequence, caption draft, and deliverable checklist. It would adapt the presentation of approved facts for different creators. Scheduling and budget calculations would use ordinary application rules.
 
-Return structured errors such as `STALE_OFFER_VERSION`, `UNAVAILABLE_SLOT`, `UNSUPPORTED_CLAIM`, or `MISSING_DISCLOSURE` to the generator with the authoritative fields. Automatically regenerate, rerun all checks, and obtain internal reviewer validation where required. Allow three total attempts. On exhaustion, withhold the brief and show a fixed request to update the relevant source fields. Human review rejection triggers the same automated retry process. Revalidate availability immediately before committing a reservation to prevent double booking.
+## 6. Validation Guardrail: No LLM-generated artifact reaches the user without passing through a validator.
 
-## 8. Deployability: If built, you are able to fully deploy it
+Briefs, suggested matches, captions, scheduling explanations, and notifications must pass validation before anyone receives them. We'll check every price, address, date, offer condition, creator ID, deliverable, budget total, and filming slot against the current owner and creator records.
 
-Deploy a responsive web app, containerized API/worker, managed PostgreSQL, and a review console. Add HTTPS, separate owner/creator roles, scoped campaign access, email opt-in, secret management, audit logs, database backups, and a sending kill switch. Use transactional reservations with expiring holds. The MVP delivers validated briefs through the app and opted-in email; creators publish their own videos.
+A separate semantic check will flag unsupported promotional claims and conflicts with filming preferences. For the first version, an internal reviewer will also check creative suitability and factual completeness before owners or creators see generated material.
 
-Acceptance requires a complete owner-to-creator campaign, a blocked incorrect price, automatic correction, and simultaneous booking attempts that cannot reserve the same slot. A solo web developer can deploy all software components without privileged social APIs. Hosting/model accounts, opted-in participants, and an internal reviewer remain required launch dependencies.
+We'll use a human-reviewed sponsorship template and check that each caption includes it. We'll still need to check the requirements of the intended platform and location. We won't invent personal endorsements or promise positive reviews.
 
-## Smallest paid pilot
+Only approved versions can appear in the app or be emailed. An owner can commission a campaign after internal validation. Changing a source fact or draft will invalidate its approval.
 
-Run six campaigns across three cafés and five creators. Test a proposed $39 monthly software fee per café; creator compensation is separate and owner-approved. Continue if brief preparation time falls by half, creators accept most briefs without factual corrections, and two owners pay for a second month. Review labor must fit the software margin.
+## 7. Self-Correction Loop: Validation errors must automatically feed back into the LLM to retry/correct.
+
+Errors such as `STALE_OFFER_VERSION`, `UNAVAILABLE_SLOT`, `UNSUPPORTED_CLAIM`, and `MISSING_DISCLOSURE` will go back to the model with the correct source fields. We'll regenerate, repeat all checks, and get reviewer approval where needed.
+
+We'll allow three total attempts, including retries after human rejection. If the brief still fails, we'll withhold it and show a fixed request to update the relevant fields. We'll check availability again when reserving a slot to prevent double booking.
+
+## 8. Deployability: If built, you are able to fully deploy it.
+
+We'll deploy a responsive web app, API and worker, managed PostgreSQL, and review console. Owners and creators will have separate roles and access only to their campaigns. We'll add HTTPS, email opt-in, secret management, audit logs, backups, and a way to stop outgoing email.
+
+Reservations will use database transactions and expiring holds. We'll deliver approved briefs in the app and through opted-in email; creators will publish their own videos.
+
+Before release, we'll complete an owner-to-creator campaign, reject and correct an incorrect price, and test simultaneous attempts to reserve the same slot. Our team will handle the software deployment. We still need hosting and model accounts, participating owners and creators, and an internal reviewer.
