@@ -1,9 +1,0 @@
-Generation mode: built-in image_gen
-
-Use case: style-transfer.
-Edit the square YipYip app icon (image 2), bringing its puppy and rendering much closer to the puppy in the vertical poster (image 1).
-Image 1 yipyip-vertical-3x4.png is the PRIMARY art style and character reference. Match its warm cream coloration, softly textured and shaded 2D storybook illustration, rounded sculpted cheeks, slight charming head tilt, chestnut floppy ears with subtle textured shading, expressive small brows, dark oval eyes with single small white catchlights, rounded dark nose, happy smiling mouth and protruding coral tongue. Restore these poster-specific facial proportions and character charm rather than simply keeping image 2's flat symmetrical logo face.
-Image 2 yipyip-app-icon.png is the square icon format and composition reference.
-Create a polished 1:1 app icon: tight head-and-upper-chest portrait of the poster puppy, including a small visible royal-blue collar and round gold tag at the bottom. Large centered face, full floppy ears, head slightly tilted as in poster, all key details comfortably within safe margins. Warm softly dimensional painterly shading and delicate grain exactly in the poster's family, with clean enough forms for small app-icon use.
-Background: full-bleed very pale powder-blue background similar to the poster, optionally a subtle light-blue rounded arch behind the puppy to echo the poster, kept minimal. Opaque background, square edges, no outer frame.
-No text, lettering, wordmark, slogans, speech bubbles, hearts, room, floor, full dog body, watermark or phone mockup. Exact square 1:1 canvas.
