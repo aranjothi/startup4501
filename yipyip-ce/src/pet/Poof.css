@@ -1,0 +1,12 @@
+@keyframes pet-poof-life { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes pet-poof-puff {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(var(--puff-turn)); }
+  18% { opacity: 1; }
+  65% { opacity: .9; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--puff-x)), calc(-50% + var(--puff-y))) scale(.6) rotate(var(--puff-turn)); }
+}
+.pet-poof { position: absolute; z-index: 2; left: 50%; top: 46%; width: 0; height: 0; pointer-events: none; animation: pet-poof-life .8s ease-out both; }
+.pet-poof i { position: absolute; top: 0; left: 0; width: var(--puff-size); height: var(--puff-size); border-radius: 48% 52% 44% 56%; background: #f2f8ff; border: 1px solid #a7c9ee; box-shadow: 0 2px 5px #4779b71a; animation: pet-poof-puff .8s cubic-bezier(.16, .7, .3, 1) both; }
+.pet-poof i::before, .pet-poof i::after { content: ''; position: absolute; width: 65%; height: 65%; background: #f2f8ff; border-radius: 50%; }
+.pet-poof i::before { left: -20%; top: 16%; }.pet-poof i::after { right: -12%; top: -10%; }
+@media (prefers-reduced-motion: reduce) { .pet-poof { display: none; animation: none; }.pet-poof i { animation: none; } }

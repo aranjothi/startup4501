@@ -90,3 +90,10 @@ input, textarea { user-select: text; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Selection indicators keep their space even when hidden, so labels never reflow. */
+.topic-choice > span:nth-child(2) { min-width: 0; }
+.topic-choice .choice-check, .scenario-option .choice-check { width: 16px; height: 16px; flex: 0 0 16px; }
+.topic-choice:not(.selected) .choice-check, .scenario-option:not(.selected) .choice-check { visibility: hidden; }
+button > svg { flex-shrink: 0; }
+.panel-action, .panel-back-btn, .journey-primary, .nav-btn, .wardrobe-buy, .lesson-segments button, .length-options button, .history-delete-actions button, .practice-primary, .practice-secondary, .lesson-text-button { white-space: nowrap; }

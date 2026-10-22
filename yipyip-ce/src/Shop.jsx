@@ -3,6 +3,7 @@ import PanelScreen from './components/PanelScreen'
 import coinImg from './assets/ui/coin.png'
 import treatImg from './assets/ui/treat.png'
 import './Shop.css'
+import Wardrobe from './pet/Wardrobe'
 
 const ITEMS = [{ id: 'treat', name: 'Treat', desc: 'Restores 10 hunger', cost: 10, img: treatImg }]
 
@@ -21,7 +22,7 @@ export default function Shop({ onClose, userState, onUpdate }) {
     finally { setBusy(false) }
   }
   const coins = userState.coins ?? 0
-  return <PanelScreen title="Shop" coins={coins} onBack={onClose} className="shop-screen">
+  return <PanelScreen title="Shop" coins={coins} onBack={onClose} backDisabled={busy} className="shop-screen">
     {error && <p className="shop-error" role="alert">{error}</p>}
     {ITEMS.map(item => <div key={item.id} className="panel-card shop-item-card">
       <img src={item.img} className="shop-item-img" alt={item.name} />
@@ -30,5 +31,7 @@ export default function Shop({ onClose, userState, onUpdate }) {
         <img src={coinImg} className="shop-buy-coin" alt="" />{item.cost}
       </button>
     </div>)}
+    <h3 className="shop-section-heading">Accessories</h3>
+    <Wardrobe mode="shop" userState={userState} onUpdate={onUpdate} externalBusy={busy} onBusyChange={setBusy} />
   </PanelScreen>
 }

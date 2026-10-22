@@ -2,6 +2,7 @@ import { getSession } from '../practice/sessionStore.js'
 import { rewardSession } from '../practice/rewards.js'
 import { getAttempt } from '../lessons/lessonStore.js'
 import { rewardLesson } from '../lessons/rewards.js'
+import { buyCosmetic, equipCosmetic } from '../pet/cosmetics.js'
 import { validateProfile } from '../lessons/catalog.js'
 
 const HUNGER_DECAY_PER_MIN = 100 / 852
@@ -69,6 +70,16 @@ async function handle(message) {
       const result = rewardLesson(state, attempt)
       await saveState(result.state)
       return { type: 'LESSON_COMPLETED', payload: result.state, awarded: result.awarded }
+    }
+    case 'BUY_COSMETIC': {
+      const next = buyCosmetic(state, message.payload?.id)
+      await saveState(next)
+      return { type: 'STATE', payload: next }
+    }
+    case 'EQUIP_COSMETIC': {
+      const next = equipCosmetic(state, message.payload)
+      await saveState(next)
+      return { type: 'STATE', payload: next }
     }
     case 'BUY_TREAT':
       if (state.coins < 10) return { type: 'BUY_TREAT_FAILED', error: 'You need 10 coins for a treat.' }

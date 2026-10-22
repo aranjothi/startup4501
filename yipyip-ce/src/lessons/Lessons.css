@@ -137,9 +137,10 @@
 .daily-goal > svg { color: #8c6021; width: 13px; height: 13px; }
 .feed-toolbar .lesson-text-button { font-size: 10px; gap: 3px; }
 .feed-toolbar .lesson-text-button svg { width: 12px; height: 12px; }
-.recommended-lesson { background: var(--app-white); border-color: var(--app-blue-border); padding-right: 52px; }
-.recommended-lesson:hover { border-color: var(--topic-accent); }
-.recommended-lesson > span:first-child { color: var(--topic-accent); }
+.recommended-lesson { background: var(--recommend-bg, #233d73); color: var(--recommend-text, #f3f6ff); border-color: var(--recommend-border, #456299); padding-right: 52px; transition: filter .18s ease; }
+.recommended-lesson:hover { filter: brightness(1.08); }
+.recommended-lesson > span:first-child { color: var(--recommend-label, #c9d9ff); }
+.recommended-lesson .recommended-topic-icon { background: transparent; color: var(--recommend-text, #f3f6ff); border: 1px solid var(--recommend-border, #456299); }
 .recommended-topic-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
 .streak-stat { background: #fff0d7; border-color: #dfbb7b; color: #86531c; }
 .streak-stat .history-stat-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: #f8dba6; color: #9a5f1f; font-size: 22px; }
@@ -183,3 +184,56 @@
 
 .reply-feedback .feedback-chevron { transition: transform .15s ease; }
 .reply-feedback[open] .feedback-chevron { transform: rotate(180deg); }
+
+/* Fixed action column keeps the history icon square and leaves room for titles. */
+.history-row-actions { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 0 0 32px; }
+.history-row-actions .history-open-icon { width: 32px; height: 32px; border: none; border-radius: 8px; }
+.history-trash { display: grid; place-items: center; width: 28px; height: 25px; background: none; border: none; border-radius: 6px; color: #8b5262; }
+.history-trash svg { width: 14px; height: 14px; }
+.history-trash:hover { background: #fff2f4; color: #a33950; }
+.history-conversation-link { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; align-self: stretch; color: inherit; border: none; background: none; text-align: left; }
+.history-conversation-link > span { flex: 1; min-width: 0; }
+.history-conversation-link > svg { flex-shrink: 0; }
+.history-delete-backdrop { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 44px 23px 28px; background: #142d5870; }
+.history-delete-dialog { width: 100%; max-height: 100%; overflow-y: auto; border: 2px solid #bad5f4; border-radius: 20px; padding: 19px 15px; background: #fff; color: #1e3a70; text-align: center; box-shadow: 0 12px 32px #142d5833; }
+.history-delete-icon { display: inline-grid; place-items: center; width: 38px; height: 38px; background: #fff0f3; border-radius: 12px; color: #a33950; font-size: 20px; }
+.history-delete-dialog h2 { font-size: 17px; line-height: 1.4; margin: 11px 0 8px; }
+.history-delete-dialog p { font-size: 11px; line-height: 1.6; color: #587397; }
+.history-delete-dialog .history-delete-rewards { margin: 10px 0 15px; font-size: 10px; }
+.history-delete-actions { display: flex; flex-direction: column; gap: 8px; }
+.history-delete-actions button { display: flex; justify-content: center; align-items: center; gap: 6px; border-radius: 99px; padding: 10px; font-size: 11px; font-weight: 700; }
+.history-delete-cancel { border: 1px solid #bad5f4; background: #e7f2ff; color: #1e3a70; }
+.history-delete-confirm { border: none; background: #a33950; color: #fff; }
+
+@keyframes history-trash-wiggle {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-12deg); }
+  65% { transform: rotate(9deg); }
+}
+@keyframes history-delete-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes history-delete-pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes history-delete-icon-in {
+  from { opacity: 0; transform: scale(.75) rotate(-8deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+.history-trash { transition: transform .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease; }
+.history-trash:is(:hover, :focus-visible) { transform: scale(1.08); background: #fff2f4; color: #a33950; box-shadow: 0 2px 6px #a339501c; }
+.history-trash:is(:hover, :focus-visible) svg { animation: history-trash-wiggle .35s ease; }
+.history-trash:active { transform: scale(.94); box-shadow: none; }
+.history-delete-backdrop { animation: history-delete-fade-in .2s ease-out both; }
+.history-delete-dialog { animation: history-delete-pop-in .3s cubic-bezier(.2, .8, .25, 1) both; }
+.history-delete-icon { animation: history-delete-icon-in .3s .06s ease-out both; }
+.history-delete-actions button { transition: transform .16s ease, background-color .16s ease, box-shadow .16s ease; }
+.history-delete-actions button:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 3px 8px #142d581a; }
+.history-delete-actions button:active:not(:disabled) { transform: scale(.98); box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .history-trash, .history-delete-actions button { transition: none; }
+  .history-trash:is(:hover, :focus-visible), .history-trash:active, .history-delete-actions button:hover:not(:disabled), .history-delete-actions button:active:not(:disabled) { transform: none; }
+  .history-trash svg, .history-delete-backdrop, .history-delete-dialog, .history-delete-icon { animation: none; }
+}

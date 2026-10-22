@@ -55,3 +55,24 @@ test('legacy free-form reward requests are no longer supported', async () => {
   assert.equal(data.userState.coins, 0)
   assert.equal(data.userState.pet.xp, 80)
 })
+test('cosmetic purchase messages ignore supplied prices and serialize duplicate buys', async () => {
+  data.userState.coins = 40
+  const results = await Promise.all([
+    send({ type: 'BUY_COSMETIC', payload: { id: 'coral-bow', cost: 0 } }),
+    send({ type: 'BUY_COSMETIC', payload: { id: 'coral-bow', cost: 0 } }),
+  ])
+  assert.equal(results.filter(result => result.error).length, 1)
+  assert.equal(data.userState.coins, 20)
+  assert.deepEqual(data.userState.ownedCosmetics, ['coral-bow'])
+  assert.equal(data.userState.pet.cosmetics, undefined)
+})
+test('background rejects unowned equips and applies owned equipment without spending', async () => {
+  assert.ok((await send({ type: 'EQUIP_COSMETIC', payload: { id: 'gold-crown' } })).error)
+  assert.ok((await send({ type: 'BUY_COSMETIC', payload: { id: 'blue-cap' } })).error)
+  const equipped = await send({ type: 'EQUIP_COSMETIC', payload: { id: 'coral-bow', coins: 999 } })
+  assert.equal(equipped.payload.pet.cosmetics.neck, 'coral-bow')
+  assert.equal(equipped.payload.coins, 20)
+  const removed = await send({ type: 'EQUIP_COSMETIC', payload: { id: null, slot: 'neck' } })
+  assert.deepEqual(removed.payload.pet.cosmetics, {})
+  assert.deepEqual(removed.payload.ownedCosmetics, ['coral-bow'])
+})

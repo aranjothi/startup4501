@@ -166,7 +166,7 @@ export default function PracticeRoom({ initialScenarioId, initialSessionId, onCl
           <h3 className="section-label">Conversation</h3>
           <div className="scenario-list">
             {SCENARIOS.map(item => <button className={`scenario-option ${scenarioId === item.id ? 'selected' : ''}`} key={item.id} onClick={() => setScenarioId(item.id)} aria-pressed={scenarioId === item.id}>
-              <span className="scenario-icon"><TopicIcon topicId={item.id} /></span><strong>{item.title}</strong>{scenarioId === item.id && <FiCheck />}
+              <span className="scenario-icon"><TopicIcon topicId={item.id} /></span><strong>{item.title}</strong><FiCheck className="choice-check" aria-hidden="true" />
             </button>)}
           </div>
           <label className="field-label" htmlFor="practice-goal">Goal <span>(optional)</span></label>

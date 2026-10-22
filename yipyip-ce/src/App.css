@@ -71,6 +71,7 @@ body {
 /* ---- App (inside phone screen) ---- */
 
 .app {
+  position: relative;
   width: 100%;
   height: 100%;
   background-color: var(--app-surface);
@@ -95,16 +96,18 @@ body {
 }
 
 .pet-pill {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 7px;
   background: #b1cff3;
   border-radius: 20px;
-  padding: 4px 6px 4px 4px;
+  padding: 4px 12px 4px 4px;
   height: 38px;
 }
 
 .pet-pill-avatar {
+  flex-shrink: 0;
   --pet-size: 36px;
   width: 30px;
   height: 30px;
@@ -132,6 +135,7 @@ body {
 }
 
 .pet-pill-info {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -722,3 +726,12 @@ body {
 
 .feed-notif-in  { animation: feed-notif-in  0.25s ease forwards; }
 .feed-notif-out { animation: feed-notif-out 0.25s ease forwards; }
+
+/* A small paper sticker on the wall, clear of the pet and lesson card. */
+.home-customize { position: absolute; bottom: 236px; left: 38px; transform: rotate(-9deg); padding: 9px 12px; border: 2px solid white; border-radius: 5px 9px 5px 5px; background: #dcecff; color: #1e3a70; box-shadow: 0 2px 0 #aac6e6, 0 5px 9px #142d5820; font-size: 12px; font-weight: 700; white-space: nowrap; transition: transform .18s ease, box-shadow .18s ease; }
+.home-customize::before { content: ''; position: absolute; top: -6px; left: 12px; width: 25px; height: 9px; background: #ffffffb8; transform: rotate(5deg); pointer-events: none; }
+.home-customize > span { display: block; transition: transform .18s ease; }
+.home-customize:hover, .home-customize:focus-visible { transform: rotate(-9deg) scale(1.03); box-shadow: 0 2px 0 #aac6e6, 0 6px 11px #142d5828; }
+.home-customize:hover > span, .home-customize:focus-visible > span { transform: scale(1.08); }
+.home-customize:active { transform: rotate(-9deg) scale(.97); }
+@media (prefers-reduced-motion: reduce) { .home-customize, .home-customize > span, .recommended-lesson { transition: none; } }

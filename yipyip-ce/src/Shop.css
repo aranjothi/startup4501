@@ -6,3 +6,6 @@
 .shop-item-desc { font-size: 11px; color: #355c9f; }
 .shop-buy-btn { flex-shrink: 0; }
 .shop-buy-coin { width: 14px; height: 14px; object-fit: contain; }
+
+.shop-section-heading { font-size: 13px; margin-top: 5px; }
+.shop-error { color: #8c354b; font-size: 11px; line-height: 1.5; }

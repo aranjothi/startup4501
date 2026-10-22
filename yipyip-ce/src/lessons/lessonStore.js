@@ -22,6 +22,17 @@ async function read(action) {
   })
 }
 export const getAttempt = id => read(store => store.get(id))
+export async function deleteAttempt(id) {
+  if (typeof id !== 'string' || !id) throw new Error('Choose a conversation to delete.')
+  const db = await database()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('attempts', 'readwrite')
+    tx.objectStore('attempts').delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+    tx.onabort = () => reject(tx.error ?? new Error('Could not delete the conversation.'))
+  })
+}
 export async function listCompletions() {
   const attempts = await read(store => store.getAll())
   return attempts.filter(item => item.completedAt).map(({ messages, ...summary }) => summary).sort((a, b) => b.completedAt - a.completedAt)

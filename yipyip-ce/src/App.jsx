@@ -4,6 +4,9 @@ import './App.css'
 import './practice/Practice.css'
 import Settings from './Settings'
 import Shop from './Shop'
+import Customize from './pet/Customize'
+import PetAppearance, { getPetImage as getMoodImage } from './pet/PetAppearance'
+import { equippedCosmetics } from './pet/cosmetics.js'
 import PracticeRoom from './practice/PracticeRoom'
 import Onboarding from './lessons/Onboarding'
 import Welcome from './lessons/Welcome'
@@ -13,13 +16,8 @@ import HistoryScreen from './lessons/HistoryScreen'
 import { recommendedLesson } from './lessons/catalog.js'
 import { listCompletions } from './lessons/lessonStore.js'
 import TopicIcon from './lessons/TopicIcon'
+import RecommendedLesson from './lessons/RecommendedLesson'
 import './lessons/Lessons.css'
-import joyous from './assets/pet/joyous.png'
-import happy from './assets/pet/happy.png'
-import neutral from './assets/pet/neutral.png'
-import sad from './assets/pet/sad.png'
-import angry from './assets/pet/angry.png'
-import upset from './assets/pet/upset.png'
 import coinImg from './assets/ui/coin.png'
 import treatImg from './assets/ui/treat.png'
 import emptyBowl from './assets/ui/empty_bowl.png'
@@ -27,19 +25,6 @@ import fewBowl from './assets/ui/few_bowl.png'
 import fullBowl from './assets/ui/full_bowl.png'
 import phoneImg from './assets/ui/phone_test.png'
 import { listSessions } from './practice/sessionStore.js'
-
-const MOOD_IMAGES = [
-  { threshold: 83, src: joyous  },
-  { threshold: 67, src: happy   },
-  { threshold: 50, src: neutral },
-  { threshold: 33, src: sad     },
-  { threshold: 17, src: angry   },
-  { threshold:  0, src: upset   },
-]
-
-function getMoodImage(mood) {
-  return (MOOD_IMAGES.find(m => mood > m.threshold) ?? MOOD_IMAGES.at(-1)).src
-}
 
 function getTreatBowl(treats) {
   if (treats === 0) return emptyBowl
@@ -247,10 +232,6 @@ export default function App() {
               </div>
             </div>
             <div className="nav-right">
-              <button className="nav-btn" title="History" onClick={() => setScreen('history')}>
-                <FiCalendar />
-                <span className="nav-label">History</span>
-              </button>
               <button className="nav-btn" title="Shop" onClick={() => setScreen('shop')}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z" clipRule="evenodd" />
@@ -260,6 +241,10 @@ export default function App() {
               <button className="nav-btn" title="Practice" onClick={() => openPractice()}>
                 <TopicIcon topicId="everyday" />
                 <span className="nav-label">Practice</span>
+              </button>
+              <button className="nav-btn" title="History" onClick={() => setScreen('history')}>
+                <FiCalendar />
+                <span className="nav-label">History</span>
               </button>
               <button className="nav-btn" title="Settings" onClick={() => openSettings()}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -278,9 +263,7 @@ export default function App() {
             <StatRow iconEl={<SmileyIcon />} iconClass="icon-mood" label="Mood" subtitle={getMoodMessage(pet.mood)} value={Math.ceil(pet.mood)} max={100} barClass="mood" />
           </div></div>
           <div className="recommended-slot">
-            <button className="recommended-lesson" data-topic={nextLesson.topicId} onClick={() => openLesson(nextLesson.id)}>
-              <span>Next recommended lesson</span><strong>{nextLesson.title}</strong><span className="recommended-topic-icon topic-icon-badge"><TopicIcon topicId={nextLesson.topicId} /></span>
-            </button>
+<RecommendedLesson key={nextLesson.id} lesson={nextLesson} onOpen={openLesson} />
           </div>
           <div style={{ position: 'relative', height: 0 }}>
             {notice && <p className="feed-notif feed-notif-in" role="status">{notice}</p>}
@@ -307,21 +290,23 @@ export default function App() {
                 <span>{formatNum(treats)}</span>
               </div>
             </button>
-            <img
+            <PetAppearance
               ref={petRef}
               className={`pet-sprite ${getRockClass(pet.mood)} ${pet.mood <= 17 ? 'pet-upset' : ''}`.trim()}
-              src={getMoodImage(pet.mood)}
-              alt={pet.name}
+              pet={pet}
+              cosmetics={equippedCosmetics(userState)}
             />
           </div>
+          <button className="home-customize" onClick={() => setScreen('customize')}><span>Customize</span></button>
       </main>
       {screen === 'welcome' && <Welcome onStart={() => setScreen('onboarding')} />}
       {['onboarding', 'survey'].includes(screen) && <Onboarding profile={userState.learningProfile} coins={coins} onBack={() => setScreen(screen === 'survey' ? surveyReturn : 'welcome')} onDone={state => { setUserState(state); setScreen('practice') }} />}
       {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('home')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
       {screen === 'lesson' && <ChatLesson key={lessonKey} {...lessonTarget} profile={userState.learningProfile} coins={coins} onBack={() => { setScreen(lessonTarget.attemptId ? 'history' : 'practice'); refresh() }} onHome={() => { setScreen('home'); refresh() }} onProgress={refresh} onRestart={id => openLesson(id, undefined, true)} />}
       {screen === 'recording' && <PracticeRoom coins={coins} initialSessionId={practiceTarget.sessionId} onClose={closeRecording} />}
-      {screen === 'history' && <HistoryScreen coins={coins} completions={completions} legacySessions={sessions} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}
+      {screen === 'history' && <HistoryScreen coins={coins} completions={completions} legacySessions={sessions} onDeleted={refresh} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}
       {screen === 'settings' && <Settings userState={userState} onClose={() => setScreen(settingsReturn)} onPreferences={() => openSurvey('settings')} onApply={state => { setUserState(state); setScreen(settingsReturn) }} />}
+      {screen === 'customize' && <Customize userState={userState} onClose={() => setScreen('home')} onUpdate={setUserState} />}
       {screen === 'shop' && <Shop userState={userState} onClose={() => setScreen('home')} onUpdate={setUserState} />}
     </div>
     {dragging && <img className="dragged-treat" src={treatImg} alt="" style={{ left: cursor.x - 15, top: cursor.y - 15 }} />}

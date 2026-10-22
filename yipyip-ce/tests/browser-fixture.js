@@ -4,19 +4,23 @@ import { rewardSession } from '../src/practice/rewards.js'
 import { getAttempt } from '../src/lessons/lessonStore.js'
 import { rewardLesson } from '../src/lessons/rewards.js'
 import { getLesson, validateProfile } from '../src/lessons/catalog.js'
+import { buyCosmetic, equipCosmetic } from '../src/pet/cosmetics.js'
 import { conversationOutcome } from '../src/lessons/engagement.js'
+const cosmeticFixture = new URLSearchParams(window.location.search).get('cosmetics')
+const stateKey = cosmeticFixture ? `yipyip-cosmetics-test-${cosmeticFixture}` : 'yipyip-lessons-test-state'
 const listeners = new Set()
-const read = () => JSON.parse(localStorage.getItem('yipyip-lessons-test-state') || 'null') ?? {
-  id: 'browser-test', coins: 0, treats: 0, rewardedSessionIds: [],
-  pet: { name: 'Pal', level: 1, xp: 0, hunger: 70, mood: 85, lastActiveAt: Date.now(), lastDecayAt: Date.now() },
+const read = () => JSON.parse(localStorage.getItem(stateKey) || 'null') ?? {
+  id: 'browser-test', coins: cosmeticFixture === 'unlocked' ? 100 : 0, treats: 0, rewardedSessionIds: [],
+  ...(cosmeticFixture ? { learningProfile: { topics: ['everyday'], confidence: 'starting', dailyGoal: 1 } } : {}),
+  pet: { name: 'Pal', level: cosmeticFixture === 'unlocked' ? 4 : 1, xp: 0, hunger: 70, mood: 85, lastActiveAt: Date.now(), lastDecayAt: Date.now() },
 }
 function write(state) {
   const before = read()
-  localStorage.setItem('yipyip-lessons-test-state', JSON.stringify(state))
+  localStorage.setItem(stateKey, JSON.stringify(state))
   listeners.forEach(listener => listener({ userState: { newValue: state, oldValue: before } }))
 }
 window.addEventListener('storage', event => {
-  if (event.key === 'yipyip-lessons-test-state' && event.newValue) listeners.forEach(listener => listener({ userState: { newValue: JSON.parse(event.newValue) } }))
+  if (event.key === stateKey && event.newValue) listeners.forEach(listener => listener({ userState: { newValue: JSON.parse(event.newValue) } }))
 })
 window.chrome = {
   runtime: {
@@ -36,6 +40,12 @@ window.chrome = {
       if (message.type === 'COMPLETE_LESSON') {
         const result = rewardLesson(state, await getAttempt(message.payload.attemptId))
         write(result.state); return { payload: result.state, awarded: result.awarded }
+      }
+      if (['BUY_COSMETIC', 'EQUIP_COSMETIC'].includes(message.type)) {
+        try {
+          state = message.type === 'BUY_COSMETIC' ? buyCosmetic(state, message.payload.id) : equipCosmetic(state, message.payload)
+          write(state); return { payload: state }
+        } catch (error) { return { error: error.message } }
       }
       if (message.type === 'BUY_TREAT') {
         if (state.coins < 10) return { error: 'Not enough coins.' }

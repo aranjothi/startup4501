@@ -2,14 +2,14 @@
 @keyframes journey-float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-9px) rotate(3deg); } }
 @keyframes journey-dot { 0%, 70%, 100% { transform: translateY(0); opacity: .5; } 35% { transform: translateY(-4px); opacity: 1; } }
 .welcome-screen { position: absolute; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; padding: 37px 22px 24px; color: var(--app-blue-deep); overflow-y: auto; background: var(--app-backdrop); animation: journey-rise .4s ease both; }
-.welcome-brand { display: inline-flex; align-items: center; gap: 6px; font-family: 'DynaPuff', system-ui, sans-serif; color: #357bd8; font-size: 17px; }
-.welcome-illustration { position: relative; flex: 1; min-height: 170px; max-height: 230px; width: 100%; display: grid; place-items: center; }
+.welcome-brand { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 6px; font-family: 'DynaPuff', system-ui, sans-serif; color: #357bd8; font-size: 30px; white-space: nowrap; flex-shrink: 0; transform: translateY(50px) scale(1.35); }
+.welcome-illustration { position: relative; flex: 1; min-height: 170px; max-height: 230px; width: 100%; display: grid; place-items: center; transform: translateY(36px); }
 .welcome-pet-disc { width: 146px; height: 146px; border: 5px solid #ffffffb0; background: #d8eaff; border-radius: 50%; box-shadow: 0 14px 35px #357bd822; display: grid; place-items: center; }
 .welcome-pet-disc img { width: 115px; height: 132px; object-fit: contain; animation: journey-float 4s ease-in-out infinite; }
 .welcome-orbit { position: absolute; width: 41px; height: 41px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; box-shadow: 0 5px 15px #5c559114; animation: journey-float 4s ease-in-out infinite; }
-.orbit-one { top: 25%; left: 12px; background: #fff1cc; color: #ae7a25; transform: rotate(-12deg); }
-.orbit-two { right: 8px; top: 43%; background: #fbd1e2; color: #b15983; animation-delay: -.8s; }
-.welcome-mini-bubble { position: absolute; top: 8%; right: 35px; background: white; border-radius: 16px 16px 16px 3px; padding: 12px; display: flex; gap: 4px; }
+.orbit-one { top: calc(25% + 70px); left: 12px; background: #fff1cc; color: #ae7a25; transform: rotate(-12deg); }
+.orbit-two { right: 8px; top: calc(43% + 60px); background: #fbd1e2; color: #b15983; animation-delay: -.8s; }
+.welcome-mini-bubble { position: absolute; top: calc(8% + 65px); right: 35px; background: white; border-radius: 16px 16px 16px 3px; padding: 12px; display: flex; gap: 4px; }
 .welcome-mini-bubble i { width: 5px; height: 5px; border-radius: 50%; background: #78a7e5; animation: journey-dot 1.4s infinite; }
 .welcome-mini-bubble i:nth-child(2) { animation-delay: .15s; }.welcome-mini-bubble i:nth-child(3) { animation-delay: .3s; }
 .welcome-copy { text-align: center; animation: journey-rise .5s .08s both; }
@@ -19,13 +19,13 @@
 .welcome-features { display: flex; gap: 8px; margin: 21px 0; }
 .welcome-features span { display: inline-flex; align-items: center; gap: 5px; padding: 7px 10px; border-radius: 20px; background: #ffffff99; border: 1px solid #fff; font-size: 11px; color: #355c9f; }
 .journey-primary { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: none; border-radius: 22px; background: #357bd8; color: white; padding: 13px 16px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px #357bd831; transition: transform .18s, box-shadow .18s; }
-.journey-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 18px #357bd841; }.journey-primary:active { transform: scale(.97); }
+.journey-primary:hover { transform: scale(1.02); box-shadow: 0 8px 18px #357bd841; }.journey-primary:active { transform: scale(.97); }
 .welcome-footnote { font-size: 9px; color: #6681a3; text-align: center; margin-top: 13px; }
 .journey-survey { background: var(--app-backdrop); }
 .journey-survey .panel-title-pill { background: var(--app-blue-soft); border-color: var(--app-blue-border); }.journey-survey .panel-title { color: #355c9f; }
 .journey-survey .survey-card { background: #ffffffab; border: 1px solid #ffffff; box-shadow: 0 8px 24px #357bd812; padding: 14px; }
 .survey-progress { display: flex; gap: 6px; margin: 9px 0 15px; }.survey-progress span { flex: 1; height: 5px; border-radius: 5px; background: #d8e7f8; }.survey-progress span.active { background: #357bd8; }
 .survey-step { animation: journey-rise .3s ease both; }.journey-survey .survey-step h3 { font-size: 16px; line-height: 1.4; color: #1e3a70; }
-.journey-survey .topic-choice { transition: transform .18s, box-shadow .18s; border-radius: 14px; }.journey-survey .topic-choice:hover { transform: translateY(-2px); }.journey-survey .topic-choice.selected { box-shadow: 0 3px 9px #4e687b18, inset 0 0 0 1px var(--topic-accent); }
-.journey-survey .panel-action { background: #357bd8; padding: 11px 14px; }.journey-survey .lesson-segments button { transition: background .2s, transform .2s; }.journey-survey .lesson-segments button.selected { background: #357bd8; border-color: #357bd8; transform: translateY(-2px); }
+.journey-survey .topic-choice { transition: transform .18s, box-shadow .18s; border-radius: 14px; }.journey-survey .topic-choice:hover { transform: scale(1.01); }.journey-survey .topic-choice.selected { box-shadow: 0 3px 9px #4e687b18, inset 0 0 0 1px var(--topic-accent); }
+.journey-survey .panel-action { background: #357bd8; padding: 11px 14px; }.journey-survey .lesson-segments button { transition: background .2s, transform .2s; }.journey-survey .lesson-segments button.selected { background: #357bd8; border-color: #357bd8; transform: scale(1.02); }
 @media (prefers-reduced-motion: reduce) { .welcome-screen, .welcome-copy, .welcome-pet-disc img, .welcome-orbit, .welcome-mini-bubble i, .survey-step { animation: none; }.journey-primary, .journey-survey .topic-choice, .journey-survey .lesson-segments button { transition: none; } }

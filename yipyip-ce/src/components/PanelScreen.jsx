@@ -9,7 +9,7 @@ function formatBalance(value) {
 }
 
 // Every sidebar overlay follows the original shop's layout and proportions.
-export default function PanelScreen({ title, coins = 0, onBack, backDisabled = false, animateBack = true, className = '', label = title, children, footer, topic, header }) {
+export default function PanelScreen({ title, coins = 0, onBack, backDisabled = false, animateBack = true, className = '', label = title, children, footer, topic, header, overlay }) {
   const [closing, setClosing] = useState(false)
   const timer = useRef(null)
   useEffect(() => () => clearTimeout(timer.current), [])
@@ -21,7 +21,7 @@ export default function PanelScreen({ title, coins = 0, onBack, backDisabled = f
   }
   const balance = formatBalance(coins)
   return <section className={`panel-screen ${closing ? 'panel-closing' : 'panel-opening'} ${className}`} aria-label={label} data-topic={topic}>
-    {header || <header className="panel-header">
+    {header || <header className="panel-header" inert={overlay ? '' : undefined}>
       <button type="button" className="panel-back-btn" disabled={backDisabled || closing} onClick={back}>
         <span className="panel-back-text">← Back</span>
       </button>
@@ -31,7 +31,8 @@ export default function PanelScreen({ title, coins = 0, onBack, backDisabled = f
         <span style={{ fontSize: balance.length >= 5 ? '10px' : balance.length >= 4 ? '11.5px' : '13px' }}>{balance}</span>
       </div>
     </header>}
-    <div className="panel-body">{children}</div>
-    {footer && <div className="panel-footer">{footer}</div>}
+    <div className="panel-body" inert={overlay ? '' : undefined}>{children}</div>
+    {footer && <div className="panel-footer" inert={overlay ? '' : undefined}>{footer}</div>}
+    {overlay}
   </section>
 }

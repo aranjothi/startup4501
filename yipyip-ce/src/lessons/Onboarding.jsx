@@ -31,7 +31,7 @@ export default function Onboarding({ profile, coins, onDone, onBack }) {
       {!step ? <>
         <h3 className="icon-heading"><FiTarget aria-hidden="true" />What would you like to work on?</h3>
         <p className="panel-description">Choose the topics for your lesson feed.</p>
-        <div className="topic-choices">{TOPICS.map(topic => <button key={topic.id} data-topic={topic.id} className={`topic-choice ${topics.includes(topic.id) ? 'selected' : ''}`} aria-pressed={topics.includes(topic.id)} onClick={() => toggle(topic.id)}><span className="topic-icon-badge"><TopicIcon topicId={topic.id} /></span><span><strong>{topic.title}</strong><small>{topic.description}</small></span>{topics.includes(topic.id) && <FiCheck />}</button>)}</div>
+        <div className="topic-choices">{TOPICS.map(topic => <button key={topic.id} data-topic={topic.id} className={`topic-choice ${topics.includes(topic.id) ? 'selected' : ''}`} aria-pressed={topics.includes(topic.id)} onClick={() => toggle(topic.id)}><span className="topic-icon-badge"><TopicIcon topicId={topic.id} /></span><span><strong>{topic.title}</strong><small>{topic.description}</small></span><FiCheck className="choice-check" aria-hidden="true" /></button>)}</div>
         <button className="panel-action lesson-wide" disabled={!topics.length} onClick={() => setStep(1)}>Continue <FiArrowRight aria-hidden="true" /></button>
       </> : <>
         <h3 className="icon-heading"><FiTrendingUp aria-hidden="true" />Make it your routine</h3>
