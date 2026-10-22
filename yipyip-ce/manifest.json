@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "YipYip",
+  "version": "0.1.0",
+  "description": "Practice conversations, reflect on your recordings, and grow with your pet companion.",
+  "icons": {
+    "16": "src/assets/ui/yipyip_logo.png",
+    "32": "src/assets/ui/yipyip_logo.png",
+    "48": "src/assets/ui/yipyip_logo.png",
+    "128": "src/assets/ui/yipyip_logo.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "src/assets/ui/yipyip_logo.png",
+      "32": "src/assets/ui/yipyip_logo.png",
+      "48": "src/assets/ui/yipyip_logo.png",
+      "128": "src/assets/ui/yipyip_logo.png"
+    },
+    "default_title": "Open YipYip"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "src/background/index.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "sidePanel"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+  "minimum_chrome_version": "116",
+  "host_permissions": [
+    "http://127.0.0.1:8787/*"
+  ]
+}

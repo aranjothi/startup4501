@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>YipYip — Camera Access</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #e8f3ff;
+      color: #1e3a70;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+    h1 { font-size: 22px; }
+    p  { font-size: 14px; color: #355c9f; max-width: 360px; line-height: 1.5; }
+    button {
+      padding: 12px 28px;
+      background: #355c9f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #1e3a70; }
+    #status { font-size: 14px; font-weight: 600; min-height: 20px; }
+    .success { color: #14532d; }
+    .error   { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>YipYip — Camera Access</h1>
+  <p>Focus Mode needs camera access to detect when you look away. Click below to grant it, then switch back to the YipYip side panel and click <strong>Retry</strong>.</p>
+  <button id="grant-btn">Grant Camera Access</button>
+  <div id="status"></div>
+  <script src="camera-permission.js"></script>
+</body>
+</html>

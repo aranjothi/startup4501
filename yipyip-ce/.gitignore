@@ -1,0 +1,12 @@
+node_modules/
+dist/
+public/mediapipe/
+
+NOTES.md
+CLAUDE.md
+.env
+.env.*
+!.env.example
+
+# Local development handoff
+DEVELOPMENT_NOTES.md

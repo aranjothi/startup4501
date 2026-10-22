@@ -1,0 +1,1 @@
+export const VERBATIM_CONTEXT = "A verbatim conversation-practice recording. Audible hesitations such as uh, um, er and erm, repeated words, and false starts are meaningful evidence for communication coaching. Preserve them when audible rather than smoothing or paraphrasing the speaker's wording. Do not insert a hesitation that was not spoken."

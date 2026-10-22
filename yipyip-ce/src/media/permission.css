@@ -1,0 +1,8 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #edf6ff; color: #1e3a70; font-family: system-ui, sans-serif; }
+main { padding: 16px; text-align: center; }
+.device-icon { display: inline-grid; place-items: center; background: #d8e9fc; border: 2px solid #87afe6; border-radius: 11px; width: 34px; height: 34px; font-size: 18px; }
+h1 { font-size: 18px; margin: 8px 0; }
+p { font-size: 13px; line-height: 1.5; margin: 8px 0; }
+button { background: #1e3a70; color: white; border: none; border-radius: 99px; padding: 7px 20px; margin-top: 4px; font: inherit; font-size: 13px; cursor: pointer; }
+button:focus-visible { outline: 3px solid white; outline-offset: 3px; }

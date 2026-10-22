@@ -1,0 +1,192 @@
+.cam-check-screen {
+  position: absolute;
+  inset: 0;
+  background-image: url('./assets/ui/tab_bg.png');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 250;
+  animation: timer-screen-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.cam-check-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 88%;
+}
+
+.cam-check-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.cam-check-back {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #1e3a70;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  width: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.cam-check-back:hover { opacity: 1; }
+
+.cam-check-title {
+  flex: 1;
+  text-align: center;
+  font-family: 'DynaPuff', system-ui, sans-serif;
+  font-size: 20px;
+  color: #1e3a70;
+  margin: 0;
+}
+
+.cam-check-header-spacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+/* ---- Camera preview ---- */
+
+.cam-preview-wrap {
+  width: 100%;
+  height: 190px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0a0a0a;
+  position: relative;
+  border: 2px solid #1e3a7030;
+}
+
+.cam-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror for natural selfie view */
+}
+
+.cam-preview-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  opacity: 0.4;
+}
+
+.cam-preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Status pill ---- */
+
+.cam-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 99px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.cam-status-ok {
+  background: #dcfce7;
+  color: #14532d;
+  border: 1.5px solid #86efac;
+}
+
+.cam-status-warn {
+  background: #fefce8;
+  color: #713f12;
+  border: 1.5px solid #fde68a;
+}
+
+.cam-status-waiting {
+  background: #dbeafe;
+  color: #1e3a70;
+  border: 1.5px solid #93c5fd;
+}
+
+.cam-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cam-dot-green  { background: #22c55e; }
+.cam-dot-yellow { background: #eab308; }
+
+/* Fixed-height wrapper so the Start button never shifts */
+.cam-status-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 76px; /* pill ~34px + gap 8px + hint ~34px */
+}
+
+.cam-hint {
+  font-size: 11.5px;
+  color: #713f12;
+  text-align: center;
+  margin: 0 4px;
+  line-height: 1.5;
+}
+
+.cam-hint.cam-hint-ok {
+  color: #14532d;
+  font-weight: 600;
+}
+
+/* ---- Grant access button ---- */
+
+.cam-grant-btn {
+  background: #355c9f;
+  border: none;
+  border-radius: 99px;
+  padding: 9px 22px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cam-grant-btn:hover { background: #1e3a70; }
+
+/* ---- Start button ---- */
+
+.cam-start-btn {
+  width: 100%;
+  padding: 12px;
+  background: #355c9f;
+  border: none;
+  border-radius: 99px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.15s, opacity 0.15s;
+  margin-top: 4px;
+}
+.cam-start-btn:not(:disabled):hover { background: #1e3a70; cursor: pointer; }

@@ -22,7 +22,7 @@ We still need to establish access to people who will test it. We plan to recruit
 
 ## 3. You are familiar with (or can quickly learn) most of the required infrastructure.
 
-We'll start with a Chrome extension that opens a dedicated practice page for camera and microphone recording. Our proposed backend uses a Python API, PostgreSQL, private video storage, a hosted LLM, timestamped transcription, and an existing pose or landmark estimation library.
+We'll start with a Chrome extension whose practice setup, camera and microphone recording, feedback, and session history all stay in the sidebar. Our proposed backend uses a Python API, PostgreSQL, private video storage, a hosted LLM, timestamped transcription, and an existing pose or landmark estimation library.
 
 Our first complete prototype should run a short turn-based conversation, record the user's video, transcribe their speech, extract a few supported visual observations, and return validated feedback afterward. We'll need to work through extension development, recording and uploads, conversation flow, video analysis, and background processing.
 

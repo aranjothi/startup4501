@@ -1,0 +1,8 @@
+.settings-body { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.settings-row { display: flex; align-items: center; gap: 12px; }
+.settings-label { font-size: 14px; font-weight: 700; color: #1e3a70; flex-shrink: 0; }
+.settings-input { flex: 1; min-width: 0; width: 100%; background: rgba(255, 255, 255, .55); border: 1.5px solid #87afe6; border-radius: 8px; padding: 6px 10px; color: #1e3a70; font-size: 13px; font-weight: 600; font-family: inherit; }
+.settings-input:focus { border-color: #355c9f; background: rgba(255, 255, 255, .8); }
+.settings-apply-btn { width: 100%; }
+.settings-storage h3 { font-size: 14px; margin-bottom: 8px; }
+.settings-storage p + p { margin-top: 10px; }

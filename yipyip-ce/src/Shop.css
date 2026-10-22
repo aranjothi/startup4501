@@ -1,0 +1,8 @@
+/* Shop proportions are the reference for the shared PanelScreen styles. */
+.shop-item-card { display: flex; align-items: center; gap: 14px; }
+.shop-item-img { width: 36px; height: 36px; object-fit: contain; transform: rotate(45deg); flex-shrink: 0; }
+.shop-item-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.shop-item-name { font-size: 14px; font-weight: 700; color: #1e3a70; }
+.shop-item-desc { font-size: 11px; color: #355c9f; }
+.shop-buy-btn { flex-shrink: 0; }
+.shop-buy-coin { width: 14px; height: 14px; object-fit: contain; }
