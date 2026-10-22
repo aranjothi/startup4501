@@ -1,0 +1,13 @@
+Generation mode: built-in image_gen
+
+Use case: ads-marketing
+Asset type: finished vertical YipYip brand graphic, exact 3:4 portrait aspect ratio, ideally 1536 x 2048 pixels.
+Primary request: Create a polished graphic that feels native to the existing YipYip artwork.
+Input images: Image 1 happy.png is the primary character identity and illustration-style reference; Image 2 yipyip_bg.png is the warm room mood reference; Image 3 yipyip_logo.png is the puppy face and soft blue palette reference. These are supporting references, not edit targets.
+Subject: The SAME adorable cream puppy with chestnut-brown floppy ears, big dark oval eyes and white highlights, small eyebrows, dark rounded nose, happy open smile and coral tongue, royal-blue collar and round golden tag, brown flank patch and brown tail. Retain its distinctive proportions and gentle dimensional shading; show the full seated puppy as a large central hero.
+Style/medium: softly shaded clean 2D digital illustration, rounded friendly forms, delicate texture, warm approachable mobile-app brand artwork matching the references closely.
+Scene/backdrop: very pale powder-blue upper background, blending into a warm ivory room with a narrow pale oak floor at the bottom. A soft blue rounded arch behind the puppy, subtle ground shadow. A few floating rounded speech bubbles with simple dots or a small heart, in white and pale blue, supporting the conversation theme. Airy and uncluttered.
+Composition: strong portrait poster hierarchy, generous margins. Large friendly rounded deep-navy wordmark 'YipYip' centered in the upper fifth; short two-line description beneath it; happy puppy occupying most of the lower two thirds, entire ears and paws visible. Thoughtful negative space and crisp typography.
+Text (verbatim): 'YipYip' and 'Daily practice.\nBetter conversations.'
+Color palette: powder blue #e7f2ff and #bad5f4, deep navy #1e3a70, cream and warm chestnut for puppy, small gold and coral accents from the references.
+Constraints: exact 3:4 vertical canvas. Preserve mascot identity. Only the two specified text elements. No phone mockup, no invented logos, no watermark, no photorealistic fur, no thick black outlines.

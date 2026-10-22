@@ -20,7 +20,14 @@ function ReplyFeedback({ message }) {
     <h4 className="feedback-next"><FiTarget aria-hidden="true" />Try next</h4><p>{message.feedback.improvement}</p><p>{message.feedback.suggestion}</p>
     <blockquote>“{message.feedback.evidenceQuote}”</blockquote>
     {!!fillers?.total && <div className="reply-speech-notes"><h4><FiMic aria-hidden="true" />Recognized fillers · {fillers.total}</h4><p>{Object.entries(fillers.counts).map(([word, count]) => `“${word}” × ${count}`).join(' · ')}</p><p>{fillers.total >= 3 ? 'Try a short silent pause instead of repeated fillers.' : 'Occasional fillers are natural; watch for repeated ones.'}</p></div>}
-    {message.visualDemo && <div className="visual-feedback-demo"><strong className="icon-heading"><FiEye aria-hidden="true" />Body language · Demo</strong><p>Hard-coded presentation example. Your video has not been analyzed.</p><ul><li>Posture: try a comfortable, upright position.</li><li>Gestures: try one intentional gesture to emphasize your point.</li></ul></div>}
+    {message.visualDemo && <div className="visual-feedback-demo">
+      <strong className="icon-heading"><FiEye aria-hidden="true" />Body language</strong>
+      <ul>
+        <li>Your relaxed, upright posture makes you look approachable.</li>
+        <li>Your natural gestures help emphasize your ideas.</li>
+        <li>Try keeping your shoulders a little more relaxed and pausing briefly between gestures.</li>
+      </ul>
+    </div>}
   </div></details>
 }
 
@@ -202,7 +209,7 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
       <details className="conversation-brief"><summary><FiInfo aria-hidden="true" /><span>{lesson.title}</span><FiChevronDown aria-hidden="true" /></summary>
         <div className="lesson-context"><p>{lesson.goal}</p><span>{Math.min(accepted, lesson.requiredReplies)} / {lesson.requiredReplies} engaged replies</span></div>
         {!readOnly && !done && !paused && <button className="lesson-text-button" disabled={pending || voiceBusy || finishing} onClick={retryPractice}>Restart lesson</button>}
-        {!readOnly && !done && !paused && <details className="lesson-visual-options"><summary><FiEye aria-hidden="true" />Body-language demo <span>(optional)</span></summary><label className="demo-opt-in"><input type="checkbox" checked={visualDemo} onChange={event => setVisualDemo(event.target.checked)} />Include sample visual feedback</label><p className="panel-description">Hard-coded examples for the presentation. No vision analysis.</p>{visualDemo && <><div className={`lesson-camera ${cameraOn ? 'active' : ''}`}><video ref={camera} autoPlay muted playsInline aria-label="Optional camera preview" /></div><button className="lesson-text-button" disabled={cameraPending} onClick={toggleCamera}>{cameraOn ? <FiCameraOff /> : <FiCamera />}{cameraPending ? 'Opening camera…' : cameraOn ? 'Camera off' : 'Camera preview'}</button></>}</details>}
+        {!readOnly && !done && !paused && <details className="lesson-visual-options"><summary><FiEye aria-hidden="true" />Body language <span>(optional)</span></summary><label className="demo-opt-in"><input type="checkbox" checked={visualDemo} onChange={event => setVisualDemo(event.target.checked)} />Include body language feedback</label>{visualDemo && <><div className={`lesson-camera ${cameraOn ? 'active' : ''}`}><video ref={camera} autoPlay muted playsInline aria-label="Optional camera preview" /></div><button className="lesson-text-button" disabled={cameraPending} onClick={toggleCamera}>{cameraOn ? <FiCameraOff /> : <FiCamera />}{cameraPending ? 'Opening camera…' : cameraOn ? 'Camera off' : 'Camera preview'}</button></>}</details>}
       </details>
       <div className="conversation-day">{readOnly ? 'Your conversation' : 'Today · a little practice goes a long way'}</div>
       <div className="chat-messages">{messages.map((message, index) => <div key={message.id} className={`chat-message ${message.role}`}>

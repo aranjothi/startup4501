@@ -88,7 +88,7 @@
 .feedback-content p { font-size: 11px; line-height: 1.6; margin-bottom: 6px; user-select: text; }
 .feedback-content blockquote { border-left: 2px solid #355c9f; padding-left: 7px; margin-top: 8px; font-size: 10px; color: #355c9f; overflow-wrap: anywhere; }
 .visual-feedback-demo { margin-top: 11px; padding-top: 10px; border-top: 1px solid #87afe6; }
-.visual-feedback-demo strong { display: block; font-size: 11px; margin-bottom: 6px; }
+.visual-feedback-demo strong { display: flex; align-items: center; gap: 7px; font-size: 11px; margin-bottom: 6px; }
 .visual-feedback-demo ul { padding-left: 16px; font-size: 10px; line-height: 1.6; }
 .chat-pending { font-size: 11px; color: #355c9f; }
 .lesson-composer { border: 2px solid #87afe6; border-radius: 14px; background: #ffffffbb; padding: 8px; }

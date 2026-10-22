@@ -1,0 +1,19 @@
+Generation mode: built-in image_gen
+
+high-school
+Use case: illustration-story.
+Create one finished text-free vertical 3:4 graphic, 1536x2048 canvas. This is part of a coordinated pair of student illustrations for YipYip.
+Input image: the supplied puppy graphic is ONLY an art style, palette, and layout reference. Replace the puppy with a HUMAN STUDENT. Do not include a dog.
+Style: match the reference's softly shaded clean 2D digital illustration, rounded appealing forms, subtle paperlike grain, soft gradients, dark expressive eyes and friendly welcoming expression. Stylized human anatomy, age appropriate and polished, no photorealism, no anime, no heavy black outlines.
+Palette and scene: pale powder blue #e7f2ff, light blue #bad5f4, navy #1e3a70, warm cream, chestnut, small gold and coral accents. Soft blue rounded arch on an ivory room wall with a pale oak floor, gentle grounding shadow, a few rounded white and blue conversation bubbles containing only three dots or a small coral heart. Maintain the same brand family as reference.
+Composition: one large central full-body student in the lower two thirds, entire head and shoes visible, generous clear pale blue space at top. Balanced airy portrait composition. No writing, no letters, no numbers, no wordmarks, no labels, no watermark. Do not put text on any books, clothing, laptop, or background.
+Subject: a cheerful high school teenager, approximately 16–17 years old, warm medium-brown skin and short wavy dark-brown hair, casual blue hoodie over a cream shirt, dark blue jeans and clean white sneakers with tiny gold details. Wearing a soft coral backpack with visible shoulder straps, cradling a plain closed blue notebook in one arm and giving a small friendly wave with the other hand. Clearly youthful high-school student appearance. Full body standing, naturally proportioned for a teen with a slightly large rounded illustrated head. No uniform or graduation costume.
+
+college
+Use case: illustration-story.
+Create one finished text-free vertical 3:4 graphic, 1536x2048 canvas. This is part of a coordinated pair of student illustrations for YipYip.
+Input image: the supplied puppy graphic is ONLY an art style, palette, and layout reference. Replace the puppy with a HUMAN STUDENT. Do not include a dog.
+Style: match the reference's softly shaded clean 2D digital illustration, rounded appealing forms, subtle paperlike grain, soft gradients, dark expressive eyes and friendly welcoming expression. Stylized human anatomy, age appropriate and polished, no photorealism, no anime, no heavy black outlines.
+Palette and scene: pale powder blue #e7f2ff, light blue #bad5f4, navy #1e3a70, warm cream, chestnut, small gold and coral accents. Soft blue rounded arch on an ivory room wall with a pale oak floor, gentle grounding shadow, a few rounded white and blue conversation bubbles containing only three dots or a small coral heart. Maintain the same brand family as reference.
+Composition: one large central full-body student in the lower two thirds, entire head and shoes visible, generous clear pale blue space at top. Balanced airy portrait composition. No writing, no letters, no numbers, no wordmarks, no labels, no watermark. Do not put text on any books, clothing, laptop, or background.
+Subject: a cheerful college student, approximately 21–23 years old, warm medium-brown skin and dark-brown wavy hair gathered in a loose bun, wearing a cream cardigan over a blue shirt, relaxed navy trousers, white sneakers, and a canvas shoulder tote. Holding a slim closed powder-blue laptop and two small plain books against one side with one arm and making a friendly open conversational gesture with the free hand. Clearly young-adult university student appearance, subtly more mature facial proportions than a high school teen. Full body standing, naturally proportioned with a slightly large rounded illustrated head. No graduation costume.

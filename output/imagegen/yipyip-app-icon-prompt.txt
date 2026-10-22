@@ -1,0 +1,8 @@
+Generation mode: built-in image_gen
+
+Use case: logo-brand.
+Create a polished final 1:1 square app icon for YipYip, 1024x1024.
+Use the supplied existing YipYip logo as the primary character-identity and illustration-style reference. Preserve the recognizable cheerful cream puppy face with chestnut-brown floppy ears, small curved eyebrows, dark simple oval eyes, dark rounded nose, happy open smile and coral tongue. Simplify the eyes into small solid dark oval dots with no elaborate iris or anime eyes; keep the puppy warm, cute and recognizable. Symmetrical front-facing head, oversized and centered, full ears visible, filling about 80 percent of the width, ample safe margin at all edges.
+Style: clean softly shaded 2D illustration, smooth rounded shapes, subtle warm gradients, carefully reduced detail for small app-icon sizes. Match the current YipYip brand family. A little dimensionality, no photorealistic fur, no thick black outline. The puppy face is the single memorable focal point.
+Background: opaque edge-to-edge soft powder blue with a very subtle richer blue gradient toward the lower edge, no scenery or extra graphics.
+Production constraints: exact square 1:1 canvas, full bleed background; square outer corners (platform can apply its own mask), no border, no outer shadow, no phone mockup, no text, no letters, no badges, no watermark, no transparency. Face and ears must remain comfortably inside the central safe area, readable at tiny size.

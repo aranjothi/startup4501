@@ -1,0 +1,3 @@
+Generation mode: built-in image_gen
+
+Edit the supplied YipYip graphic. Remove the entire 'YipYip' wordmark and the two lines 'Daily practice.' and 'Better conversations.' Remove the small blue accent rays flanking the wordmark as well. Seamlessly fill that upper area with the same pale powder-blue background texture. Preserve the puppy, its exact appearance and position, all four conversation bubbles, blue arch, room, floor, palette, shading, and all other artwork unchanged. Do not add any text or substitute decorations. Maintain the vertical 3:4 aspect ratio and existing canvas composition. The result must contain no lettering.
