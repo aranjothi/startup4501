@@ -2,6 +2,11 @@ export function localDayKey(value = new Date()) {
   const date = new Date(value)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
+export function dailyGoalStatus(completed, goal = 1) {
+  const remaining = Math.max(0, goal - completed)
+  const message = remaining ? `${remaining} ${remaining === 1 ? 'lesson' : 'lessons'} to go` : 'Goal complete!'
+  return `${completed} / ${goal} today · ${message}`
+}
 export function dayNumber(key) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return NaN
   const [year, month, day] = key.split('-').map(Number)
