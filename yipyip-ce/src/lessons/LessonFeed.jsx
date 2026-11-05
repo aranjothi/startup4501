@@ -8,7 +8,8 @@ import './Lessons.css'
 export default function LessonFeed({ profile, completions, coins, onBack, onLesson, onPreferences }) {
   const [all, setAll] = useState(false)
   const completed = new Set(completions.map(item => item.lessonId))
-  const completedToday = completions.filter(item => item.dayKey === localDayKey()).length
+  const today = localDayKey()
+  const completedToday = completions.filter(item => item.dayKey === today).length
   const sections = lessonFeed(all ? { topics: TOPICS.map(topic => topic.id) } : profile, completions)
   return <PanelScreen title="Practice" coins={coins} onBack={onBack}>
     <div className="feed-toolbar"><span className="panel-description daily-goal"><FiTarget aria-hidden="true" />{dailyGoalStatus(completedToday, profile?.dailyGoal)}</span><button className="lesson-text-button" onClick={onPreferences}><FiSliders aria-hidden="true" />Edit focus</button><button className="lesson-text-button" onClick={() => setAll(value => !value)}><FiGrid aria-hidden="true" />{all ? 'My topics' : 'All topics'}</button></div>
