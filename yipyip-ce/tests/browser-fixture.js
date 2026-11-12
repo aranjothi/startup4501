@@ -8,12 +8,14 @@ import { getLesson, validateProfile } from '../src/lessons/catalog.js'
 import { buyCosmetic, equipCosmetic } from '../src/pet/cosmetics.js'
 import { conversationOutcome } from '../src/lessons/engagement.js'
 const workFixture = new URLSearchParams(window.location.search).has('work')
+const rewardFixture = new URLSearchParams(window.location.search).has('rewards')
 const cosmeticFixture = new URLSearchParams(window.location.search).get('cosmetics')
-const stateKey = workFixture ? 'yipyip-work-test-state' : cosmeticFixture ? `yipyip-cosmetics-test-${cosmeticFixture}` : 'yipyip-lessons-test-state'
+const stateKey = rewardFixture ? 'yipyip-rewards-test-state' : workFixture ? 'yipyip-work-test-state' : cosmeticFixture ? `yipyip-cosmetics-test-${cosmeticFixture}` : 'yipyip-lessons-test-state'
 const listeners = new Set()
 const read = () => JSON.parse(localStorage.getItem(stateKey) || 'null') ?? {
   id: 'browser-test', coins: cosmeticFixture === 'unlocked' ? 100 : 0, treats: 0, rewardedSessionIds: [],
   ...((cosmeticFixture || workFixture) ? { learningProfile: { topics: ['everyday'], confidence: 'starting', dailyGoal: 1 } } : {}),
+  ...(rewardFixture ? { work: { tasks: [], active: { id: 'reward-test-work', title: 'Read a chapter', durationSeconds: 300, elapsedSeconds: 90, runningSince: Date.now(), startedAt: Date.now() - 90000, workMode: false } } } : {}),
   pet: { name: 'Pal', level: cosmeticFixture === 'unlocked' ? 4 : 1, xp: 0, hunger: 70, mood: 85, lastActiveAt: Date.now(), lastDecayAt: Date.now() },
 }
 function write(state) {

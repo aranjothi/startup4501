@@ -53,3 +53,13 @@ test('Tasks shows a resume hint when a work session is already saved', () => {
   assert.match(html, /Resume your work session/)
   assert.doesNotMatch(menu.render({}), /Resume your work session/)
 })
+
+test('Tasks pills include one short description each without an introductory paragraph', () => {
+  const html = menu.render({})
+  assert.match(html, /<strong>Converse<\/strong>/)
+  assert.match(html, /<strong>Get tasks done<\/strong>/)
+  assert.match(html, /<small>Build conversation skills<\/small>/)
+  assert.match(html, /<small>Focus, finish, earn rewards<\/small>/)
+  assert.equal((html.match(/<small>/g) ?? []).length, 2)
+  assert.doesNotMatch(html, /<p\b|What would you like to work on/)
+})

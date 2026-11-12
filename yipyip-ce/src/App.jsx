@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiCalendar, FiCheckSquare } from 'react-icons/fi'
 import './App.css'
 import './practice/Practice.css'
 import Settings from './Settings'
 import WorkScreen from './work/WorkScreen'
+import RewardNotification from './rewards/RewardNotification'
+import { presentCompletion } from './rewards/completion.js'
 import Shop from './Shop'
 import Customize from './pet/Customize'
 import PetAppearance, { getPetImage as getMoodImage } from './pet/PetAppearance'
@@ -140,6 +142,12 @@ export default function App() {
   const [surveyReturn, setSurveyReturn] = useState('settings')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [rewardNotification, setRewardNotification] = useState(null)
+  const completedNotices = useRef(new Set())
+  const dismissRewardNotification = useCallback(() => setRewardNotification(null), [])
+  function completed(completion) {
+    presentCompletion(completion, { setUserState, setScreen, setNotification: setRewardNotification }, completedNotices.current)
+  }
   const [busy, setBusy] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [cursor, setCursor] = useState({ x: 0, y: 0 })
@@ -222,6 +230,7 @@ export default function App() {
   return <div className="phone-container">
     <img src={phoneImg} className="phone-frame-img" alt="" aria-hidden="true" />
     <div className="phone-screen">
+      {rewardNotification && <RewardNotification key={rewardNotification.id} reward={rewardNotification} onDone={dismissRewardNotification} />}
       <main className="app" style={{ visibility: screen === 'home' ? 'visible' : 'hidden' }} aria-hidden={screen !== 'home'}>
           <header className="header">
             <div className="pet-pill">
@@ -302,12 +311,12 @@ export default function App() {
           <button className="home-customize" onClick={() => setScreen('customize')}><span>Customize</span></button>
       </main>
       {screen === 'tasks' && <TasksMenu coins={coins} activeWork={userState.work?.active} onBack={() => setScreen('home')} onConversations={openPractice} onWork={openWork} />}
-      {screen === 'work' && <WorkScreen userState={userState} onUpdate={setUserState} onBack={() => setScreen('tasks')} />}
+      {screen === 'work' && <WorkScreen userState={userState} onUpdate={setUserState} onCompleted={completed} onBack={() => setScreen('tasks')} />}
       {screen === 'welcome' && <Welcome onStart={() => setScreen('onboarding')} />}
       {['onboarding', 'survey'].includes(screen) && <Onboarding profile={userState.learningProfile} coins={coins} onBack={() => setScreen(screen === 'survey' ? surveyReturn : 'welcome')} onDone={state => { setUserState(state); setScreen('practice') }} />}
       {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('tasks')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
-      {screen === 'lesson' && <ChatLesson key={lessonKey} {...lessonTarget} profile={userState.learningProfile} coins={coins} onBack={() => { setScreen(lessonTarget.attemptId ? 'history' : 'practice'); refresh() }} onHome={() => { setScreen('home'); refresh() }} onProgress={refresh} onRestart={id => openLesson(id, undefined, true)} />}
-      {screen === 'recording' && <PracticeRoom coins={coins} initialSessionId={practiceTarget.sessionId} onClose={closeRecording} />}
+      {screen === 'lesson' && <ChatLesson onCompleted={completed} key={lessonKey} {...lessonTarget} profile={userState.learningProfile} coins={coins} onBack={() => { setScreen(lessonTarget.attemptId ? 'history' : 'practice'); refresh() }} onHome={() => { setScreen('home'); refresh() }} onProgress={refresh} onRestart={id => openLesson(id, undefined, true)} />}
+      {screen === 'recording' && <PracticeRoom onCompleted={completed} coins={coins} initialSessionId={practiceTarget.sessionId} onClose={closeRecording} />}
       {screen === 'history' && <HistoryScreen coins={coins} work={userState.work} completions={completions} legacySessions={sessions} onDeleted={refresh} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}
       {screen === 'settings' && <Settings userState={userState} onClose={() => setScreen(settingsReturn)} onPreferences={() => openSurvey('settings')} onApply={state => { setUserState(state); setScreen(settingsReturn) }} />}
       {screen === 'customize' && <Customize userState={userState} onClose={() => setScreen('home')} onUpdate={setUserState} />}

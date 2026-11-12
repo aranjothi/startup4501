@@ -1,8 +1,7 @@
-import { checkInMilestones } from './checkIns.js'
-
-// One coin and one XP per whole minute worked, as in Dopal's basic timer.
-export const WORK_ACTIONS = ['SET_WORK_CHECK_INS', 'DISMISS_WORK_CHECK_IN', 'SET_WORK_STEP', 'SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
-export const WORK_SESSION_ACTIONS = ['DISMISS_WORK_CHECK_IN', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+// Work Mode leases running time to fresh, local camera presence samples.
+export const PRESENCE_LEASE_MS = 2000
+export const WORK_ACTIONS = ['REPORT_WORK_PRESENCE', 'SET_WORK_STEP', 'SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+export const WORK_SESSION_ACTIONS = ['REPORT_WORK_PRESENCE', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
 export const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['title', 'description', 'minutes', 'steps'],
   properties: { title: { type: 'string' }, description: { type: 'string' }, minutes: { type: 'integer' }, steps: { type: 'array', items: { type: 'string' } } },
@@ -30,6 +29,7 @@ export function importLegacyTasks(tasks = []) {
 }
 export function elapsedSeconds(active, now = Date.now()) {
   if (!active) return 0
+  if (active.workMode) now = Math.min(now, (active.presenceAt ?? -PRESENCE_LEASE_MS) + PRESENCE_LEASE_MS)
   return Math.min(active.durationSeconds, Math.max(0, active.elapsedSeconds + (active.runningSince === null ? 0 : Math.max(0, now - active.runningSince) / 1000)))
 }
 export function workAction(original, { type, payload = {} }, now = Date.now()) {
@@ -42,19 +42,8 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
     throw new Error('This work session has changed. Reopen Work to use the current timer.')
   }
   switch (type) {
-    case 'SET_WORK_CHECK_INS':
-      if (typeof payload.enabled !== 'boolean') throw new Error('Choose whether companion check-ins are on or off.')
-      work.checkInsEnabled = payload.enabled
-      break
-    case 'DISMISS_WORK_CHECK_IN': {
-      if (!active) throw new Error('No work session to check in on.')
-      const milestone = checkInMilestones(active).find(item => item.id === payload.checkInId)
-      if (!milestone || milestone.at > elapsedSeconds(active, now)) throw new Error('This check-in is not available yet.')
-      active.dismissedCheckIns = [...new Set([...(active.dismissedCheckIns ?? []), milestone.id])]
-      break
-    }
     case 'SAVE_WORK_TASK': {
-      const plan = validatePlan(payload)
+      const plan = { ...validatePlan(payload), workMode: payload.workMode === true }
       if (payload.id && (!task || task.completedAt || active?.taskId === task.id)) throw new Error('This task cannot be edited right now.')
       if (task) {
         // Match each occurrence once so moving a step preserves its checkmark,
@@ -95,15 +84,25 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
       if (payload.id && (!task || task.completedAt)) throw new Error('Choose an unfinished task.')
       const minutes = minutesValue(task ? task.minutes : payload.minutes)
       const title = task?.title ?? String(payload.title || 'Quiet work').trim().slice(0, 120)
-      work.active = { id: crypto.randomUUID(), taskId: task?.id ?? null, title, durationSeconds: minutes * 60, checkInDurationSeconds: minutes * 60, dismissedCheckIns: [], elapsedSeconds: 0, runningSince: now, startedAt: now }
+      const workMode = (task ? task.workMode : payload.workMode) === true
+      work.active = { workMode, pausedByUser: false, presenceAt: null, id: crypto.randomUUID(), taskId: task?.id ?? null, title, durationSeconds: minutes * 60, elapsedSeconds: 0, runningSince: workMode ? null : now, startedAt: now }
       break
     }
+    case 'REPORT_WORK_PRESENCE':
+      if (!active?.workMode) throw new Error('Start a Work Mode session before reporting presence.')
+      if (typeof payload.present !== 'boolean') throw new Error('Choose a valid camera presence state.')
+      active.elapsedSeconds = elapsedSeconds(active, now)
+      active.presenceAt = payload.present ? now : null
+      active.runningSince = payload.present && !active.pausedByUser ? now : null
+      break
     case 'PAUSE_WORK':
-      if (!active || active.runningSince === null) throw new Error('No running session to pause.')
-      active.elapsedSeconds = elapsedSeconds(active, now); active.runningSince = null
+      if (!active || (active.runningSince === null && (!active.workMode || active.pausedByUser))) throw new Error('No running session to pause.')
+      active.elapsedSeconds = elapsedSeconds(active, now); active.runningSince = null; active.pausedByUser = true
       break
     case 'RESUME_WORK':
       if (!active || active.runningSince !== null) throw new Error('No paused session to resume.')
+      if (active.workMode && (active.presenceAt === null || now - active.presenceAt > PRESENCE_LEASE_MS)) throw new Error('Return to the camera before resuming Work Mode.')
+      active.pausedByUser = false
       active.runningSince = now
       break
     case 'EXTEND_WORK':
@@ -112,19 +111,18 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
       if (active.durationSeconds + payload.minutes * 60 > 480 * 60) throw new Error('Keep each session within 480 minutes.')
       active.elapsedSeconds = elapsedSeconds(active, now)
       if (active.runningSince !== null) active.runningSince = now
-      active.checkInDurationSeconds ??= active.durationSeconds
       active.durationSeconds += payload.minutes * 60
       break
     case 'FINISH_WORK': {
       if (!active) throw new Error('No session to complete.')
       const seconds = elapsedSeconds(active, now)
-      const coins = Math.floor(seconds / 60)
+      const coins = Math.floor(seconds / 60) * (active.workMode ? 2 : 1)
       const activeTask = work.tasks.find(item => item.id === active.taskId)
       const checklist = activeTask ? {
         steps: [...activeTask.steps],
         completedSteps: activeTask.steps.flatMap((_, index) => activeTask.completedSteps?.includes(index) ? [index] : []),
       } : null
-      const finished = { id: active.id, title: active.title, taskId: active.taskId, startedAt: active.startedAt, plannedSeconds: active.durationSeconds, seconds, coins, xp: coins, checklist, completedAt: now }
+      const finished = { workMode: active.workMode === true, id: active.id, title: active.title, taskId: active.taskId, startedAt: active.startedAt, plannedSeconds: active.durationSeconds, seconds, coins, xp: coins, checklist, completedAt: now }
       work.history = [...(work.history ?? []), finished].slice(-100)
       if (activeTask) activeTask.completedAt = now
       state.coins += coins

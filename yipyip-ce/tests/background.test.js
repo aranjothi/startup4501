@@ -114,23 +114,6 @@ test('checklist messages persist partial progress and repeated checks never pay 
   assert.equal(loaded.payload.coins, before)
 })
 
-test('check-in preferences and dismissals persist without changing rewards', async () => {
-  const initial = await send({ type: 'GET_WORK' })
-  const sessionId = initial.payload.work.active.id
-  const before = initial.payload.coins
-  const off = await send({ type: 'SET_WORK_CHECK_INS', payload: { enabled: false } })
-  assert.equal(off.payload?.work.checkInsEnabled, false)
-  await send({ type: 'SET_WORK_CHECK_INS', payload: { enabled: true } })
-  const results = await Promise.all([
-    send({ type: 'DISMISS_WORK_CHECK_IN', payload: { sessionId, checkInId: 'start' } }),
-    send({ type: 'DISMISS_WORK_CHECK_IN', payload: { sessionId, checkInId: 'start' } }),
-  ])
-  assert.ok(results.every(result => !result.error))
-  const loaded = await send({ type: 'GET_WORK' })
-  assert.deepEqual(loaded.payload.work.active.dismissedCheckIns, ['start'])
-  assert.equal(loaded.payload.coins, before)
-})
-
 test('completed work history persists its checklist and XP; viewing it cannot grant rewards again', async () => {
   const current = await send({ type: 'GET_WORK' })
   if (current.payload.work.active) await send({ type: 'STOP_WORK', payload: { sessionId: current.payload.work.active.id } })
@@ -146,4 +129,21 @@ test('completed work history persists its checklist and XP; viewing it cannot gr
   const loaded = await send({ type: 'GET_WORK' })
   assert.deepEqual(loaded.payload.work.history.at(-1), entry)
   assert.equal(loaded.payload.coins, completed.payload.coins)
+})
+
+test('Work Mode presence persists and doubled completion rewards are serialized exactly once', async () => {
+  const started = await send({ type: 'START_WORK', payload: { title: 'Camera work', minutes: 10, workMode: true } })
+  const sessionId = started.payload.work.active.id
+  const present = await send({ type: 'REPORT_WORK_PRESENCE', payload: { sessionId, present: true } })
+  assert.equal(present.payload.work.active.workMode, true)
+  assert.ok(present.payload.work.active.presenceAt)
+  assert.ok((await send({ type: 'REPORT_WORK_PRESENCE', payload: { sessionId: 'old', present: true } })).error)
+  // Seed time already verified by the camera, leaving the completion race real.
+  data.userState.work.active.elapsedSeconds = 120
+  data.userState.work.active.runningSince = null
+  const before = data.userState.coins
+  const results = await Promise.all([send({ type: 'FINISH_WORK', payload: { sessionId } }), send({ type: 'FINISH_WORK', payload: { sessionId } })])
+  assert.equal(results.filter(result => !result.error).length, 1)
+  assert.equal(data.userState.coins, before + 4)
+  assert.equal(data.userState.work.history.at(-1).xp, 4)
 })

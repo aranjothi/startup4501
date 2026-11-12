@@ -1,0 +1,20 @@
+.reward-notification { position: absolute; top: 32px; left: 10px; right: 10px; z-index: 500; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1.5px solid white; border-radius: 19px; background: #f9fffc; color: #233d65; box-shadow: 0 7px 24px rgb(30 58 112 / .22); pointer-events: none; }
+.reward-notification-icon { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 12px; background: #c9eedb; color: #27654d; }
+.reward-notification-icon svg { width: 23px; height: 23px; }
+.reward-notification-copy { flex: 1; min-width: 0; }
+.reward-notification-app { display: flex; justify-content: space-between; margin-bottom: 3px; color: #638173; font-size: 9px; }
+.reward-notification-copy > strong { display: block; font-size: 14px; line-height: 1.35; }
+.reward-notification-amounts { display: flex; gap: 13px; margin-top: 5px; }
+.reward-notification-amounts > span { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; }
+.reward-notification-amounts img, .reward-notification-amounts svg { width: 15px; height: 15px; }
+.reward-notification-amounts svg { color: #7861b6; }
+.reward-notification-copy > p { font-size: 11px; margin-top: 4px; }
+.reward-notification-in { animation: reward-notification-in 350ms cubic-bezier(.2,.85,.3,1) both; }
+.reward-notification-out { animation: reward-notification-out 260ms ease-in both; }
+@keyframes reward-notification-in { from { opacity: 0; transform: translateY(-28px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes reward-notification-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-15px); } }
+@media (prefers-reduced-motion: reduce) {
+  .reward-notification-in { animation: none; }
+  .reward-notification-out { animation: reward-notification-fade 260ms ease-in both; }
+}
+@keyframes reward-notification-fade { from { opacity: 1; } to { opacity: 0; } }

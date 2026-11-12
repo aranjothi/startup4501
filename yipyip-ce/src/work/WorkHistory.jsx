@@ -7,7 +7,7 @@ export default function WorkHistory({ work = { tasks: [], active: null } }) {
   const entries = listWorkHistory(work)
   const totals = summarizeWorkHistory(entries)
   return <div className="work-history-content">
-    {work.active && <p className="panel-description" role="status">{work.active.runningSince === null ? 'Your work session is paused.' : 'Your work session is still running.'}</p>}
+    {work.active && <p className="panel-description" role="status">{work.active.workMode ? 'Your Work Mode timer pauses without camera presence. Return to Work to continue.' : work.active.runningSince === null ? 'Your work session is paused.' : 'Your work session is still running.'}</p>}
     {!entries.length ? <section className="panel-card work-history-empty">
       <FiClock aria-hidden="true" />
       <h3>No completed sessions yet</h3>
@@ -32,6 +32,7 @@ export default function WorkHistory({ work = { tasks: [], active: null } }) {
           <dl className="work-session-stats">
             <div><dt>Time worked</dt><dd>{formatWorkDuration(entry.seconds)}</dd></div>
             {entry.plannedSeconds != null && <div><dt>Time planned</dt><dd>{formatWorkDuration(entry.plannedSeconds)}</dd></div>}
+            {entry.workMode && <div><dt>Work Mode</dt><dd>2× coins and XP</dd></div>}
             <div><dt>Earned</dt><dd>{entry.coins} {entry.coins === 1 ? 'coin' : 'coins'} · {entry.xp} XP</dd></div>
           </dl>
           {entry.checklist?.steps.length > 0 ? <TaskChecklist task={{ ...entry.checklist, title: entry.title, completedAt: entry.completedAt }} disabled />

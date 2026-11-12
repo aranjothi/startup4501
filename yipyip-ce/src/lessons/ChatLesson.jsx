@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FiMic, FiSend, FiSquare, FiCamera, FiCameraOff, FiCheck, FiMessageSquare, FiThumbsUp, FiTarget, FiEye, FiAward, FiChevronDown, FiChevronLeft, FiInfo, FiMessageCircle } from 'react-icons/fi'
 import PanelScreen from '../components/PanelScreen'
+import { conversationCompletion } from '../rewards/completion.js'
 import { getLesson } from './catalog.js'
 import { getAttempt, getDraft, saveAttempt } from './lessonStore.js'
 import { lessonTurn } from './api.js'
@@ -31,7 +32,7 @@ function ReplyFeedback({ message }) {
   </div></details>
 }
 
-export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack, onProgress, onRestart, onHome, fresh = false }) {
+export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack, onProgress, onRestart, onHome, onCompleted, fresh = false }) {
   const [attempt, setAttempt] = useState(null)
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
@@ -166,7 +167,9 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
       voice.cancel(); cameraPermission.current?.abort(); cameraGeneration.current++; cameraStream.current?.getTracks().forEach(track => track.stop()); cameraStream.current = null; setCameraOn(false)
       const result = await chrome.runtime.sendMessage({ type: 'COMPLETE_LESSON', payload: { attemptId: completed.id } })
       if (result.error) throw new Error(result.error)
+      if (!mounted.current) return
       setRewarded(true)
+      onCompleted?.(conversationCompletion(result, completed.id))
       onProgress()
     } catch (err) { setError(err.message) }
     finally { if (mounted.current) setFinishing(false) }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FiCamera, FiCheck, FiDownload, FiMessageCircle, FiPlay, FiTrash2 } from 'react-icons/fi'
 import coin from '../assets/ui/coin.png'
 import PanelScreen from '../components/PanelScreen'
+import { conversationCompletion } from '../rewards/completion.js'
 import TopicIcon from '../lessons/TopicIcon'
 import { SCENARIOS, REVIEW_PROMPTS, getScenario, formatTime, MIN_REWARD_SECONDS, SESSION_REWARD } from './scenarios.js'
 import { getSession, saveSession, deleteSession } from './sessionStore.js'
@@ -9,7 +10,7 @@ import { useRecording } from './useRecording.js'
 import '../App.css'
 import './Practice.css'
 
-export default function PracticeRoom({ initialScenarioId, initialSessionId, onClose, coins }) {
+export default function PracticeRoom({ initialScenarioId, initialSessionId, onClose, onCompleted, coins }) {
   const [step, setStep] = useState('setup')
   const [scenarioId, setScenarioId] = useState(getScenario(initialScenarioId).id)
   const [goal, setGoal] = useState('')
@@ -30,6 +31,8 @@ export default function PracticeRoom({ initialScenarioId, initialSessionId, onCl
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [playbackUrl, setPlaybackUrl] = useState('')
   const [rewardClaimed, setRewardClaimed] = useState(false)
+  const mounted = useRef(false)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const preview = useRef(null)
   const playback = useRef(null)
   const recording = useRecording(preview)
@@ -99,7 +102,9 @@ export default function PracticeRoom({ initialScenarioId, initialSessionId, onCl
       if (result.duration >= MIN_REWARD_SECONDS) {
         const response = await chrome.runtime.sendMessage({ type: 'COMPLETE_PRACTICE', payload: { sessionId } })
         if (response.error) throw new Error(`Recording saved. Reward could not be claimed: ${response.error} Try saving again.`)
+        if (!mounted.current) return
         setRewardClaimed(true)
+        onCompleted?.(conversationCompletion(response, sessionId, 'recording'))
         setNotice(response.awarded ? `Practice complete! +${SESSION_REWARD.coins} coins · +${SESSION_REWARD.xp} XP.` : 'Saved. This session’s reward has already been collected.')
       } else setNotice('Saved. Record at least 10 seconds in your next session to earn a reward.')
     } catch (err) { setError(err.name === 'QuotaExceededError' ? 'Device storage is full. Download this recording, then delete an older session and try saving again.' : err.message) }
