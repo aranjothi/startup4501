@@ -101,3 +101,15 @@ test('a delayed completion cannot finish a replacement work session', async () =
   assert.equal(data.userState.work.active.id, newId)
   assert.equal(data.userState.coins, coins)
 })
+
+test('checklist messages persist partial progress and repeated checks never pay rewards', async () => {
+  const saved = await send({ type: 'SAVE_WORK_TASK', payload: { title: 'Checklist test', description: '', minutes: 10, steps: ['Read', 'Write'] } })
+  const id = saved.payload.work.tasks.at(-1).id
+  const before = saved.payload.coins
+  const payload = { id, stepIndex: 0, stepText: 'Read', completed: true }
+  const results = await Promise.all([send({ type: 'SET_WORK_STEP', payload }), send({ type: 'SET_WORK_STEP', payload })])
+  assert.ok(results.every(result => !result.error))
+  const loaded = await send({ type: 'GET_WORK' })
+  assert.deepEqual(loaded.payload.work.tasks.find(task => task.id === id).completedSteps, [0])
+  assert.equal(loaded.payload.coins, before)
+})

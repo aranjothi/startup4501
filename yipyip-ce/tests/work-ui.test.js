@@ -72,3 +72,27 @@ test('completion confirmation replaces the timer so the final action stays visib
   assert.match(html, /Keep working/)
   assert.doesNotMatch(html, />Complete task</)
 })
+
+const checklistTask = { id: 'desk', title: 'Tidy desk', description: '', minutes: 10, steps: ['Clear desk', 'File papers'], completedSteps: [0] }
+test('task cards offer a saved checklist and show completed and remaining steps', () => {
+  const html = render(props({ userState: { coins: 10, pet, work: { tasks: [checklistTask], active: null } } }))
+  assert.match(html, /1 of 2 steps done/)
+  assert.match(html, /type="checkbox"[^>]*checked=""/)
+  assert.match(html, /Clear desk/)
+  assert.match(html, /File papers/)
+})
+test('active and paused tasks show saved checklist progress and disable changes while saving', () => {
+  const html = render(props({ busy: true, userState: { coins: 10, pet, work: { tasks: [checklistTask], active: { id: 'session', taskId: 'desk', title: 'Tidy desk', durationSeconds: 600, elapsedSeconds: 60, runningSince: null } } } }))
+  assert.match(html, /1 of 2 steps done/)
+  assert.match(html, /type="checkbox"[^>]*disabled=""/)
+  assert.match(html, /Resume/)
+})
+test('completed tasks show a read-only checklist and completion confirmation reports unfinished steps', () => {
+  const userState = { coins: 10, pet, work: { tasks: [{ ...checklistTask, completedAt: 60000 }], active: null } }
+  assert.match(render(props({ userState })), /type="checkbox"[^>]*disabled=""/)
+  userState.work.tasks[0].completedAt = undefined
+  userState.work.active = { id: 'session', taskId: 'desk', title: 'Tidy desk', durationSeconds: 600, elapsedSeconds: 60, runningSince: null }
+  const html = render(props({ userState, confirmation: 'finish' }))
+  assert.match(html, /1 step is still unchecked/)
+  assert.match(html, /Keep working/)
+})

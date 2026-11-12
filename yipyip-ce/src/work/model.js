@@ -1,5 +1,5 @@
 // One coin and one XP per whole minute worked, as in Dopal's basic timer.
-export const WORK_ACTIONS = ['SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+export const WORK_ACTIONS = ['SET_WORK_STEP', 'SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
 export const WORK_SESSION_ACTIONS = ['PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
 export const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['title', 'description', 'minutes', 'steps'],
@@ -43,8 +43,34 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
     case 'SAVE_WORK_TASK': {
       const plan = validatePlan(payload)
       if (payload.id && (!task || task.completedAt || active?.taskId === task.id)) throw new Error('This task cannot be edited right now.')
-      if (task) Object.assign(task, plan)
-      else work.tasks.push({ ...plan, id: crypto.randomUUID(), createdAt: now })
+      if (task) {
+        // Match each occurrence once so moving a step preserves its checkmark,
+        // while rewriting or deleting it cannot transfer progress to another step.
+        const positions = new Map()
+        task.steps.forEach((text, index) => {
+          if (!positions.has(text)) positions.set(text, [])
+          positions.get(text).push(index)
+        })
+        const completedSteps = []
+        plan.steps.forEach((text, index) => {
+          const previousIndex = positions.get(text)?.shift()
+          if (previousIndex !== undefined && task.completedSteps?.includes(previousIndex)) completedSteps.push(index)
+        })
+        Object.assign(task, plan, { completedSteps })
+      }
+      else work.tasks.push({ ...plan, completedSteps: [], id: crypto.randomUUID(), createdAt: now })
+      break
+    }
+    case 'SET_WORK_STEP': {
+      const { stepIndex, stepText, completed } = payload
+      if (!task || task.completedAt || !Number.isInteger(stepIndex) || stepIndex < 0 || stepIndex >= task.steps.length
+        || task.steps[stepIndex] !== stepText || typeof completed !== 'boolean') {
+        throw new Error('This checklist has changed. Reopen the task and try again.')
+      }
+      const checked = new Set((task.completedSteps ?? []).filter(index => Number.isInteger(index) && index >= 0 && index < task.steps.length))
+      if (completed) checked.add(stepIndex)
+      else checked.delete(stepIndex)
+      task.completedSteps = [...checked].sort((a, b) => a - b)
       break
     }
     case 'DELETE_WORK_TASK':

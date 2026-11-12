@@ -15,6 +15,23 @@ function clock(seconds) {
 }
 const coinText = coins => `${coins} ${coins === 1 ? 'coin' : 'coins'}`
 
+function TaskChecklist({ task, disabled = false, onAction = noop }) {
+  if (!task?.steps.length) return null
+  const count = task.steps.filter((_, index) => task.completedSteps?.includes(index)).length
+  return <div className="work-checklist" role="group" aria-label={`${task.title} steps`}>
+    <p className="work-checklist-count" role="status">{`${count} of ${task.steps.length} steps done`}</p>
+    <progress value={count} max={task.steps.length} aria-label="Checklist progress" />
+    <ul>{task.steps.map((text, index) => {
+      const checked = task.completedSteps?.includes(index) ?? false
+      return <li key={index}><label className={checked ? 'work-step-done' : ''}>
+        <input type="checkbox" checked={checked} disabled={disabled || !!task.completedAt}
+          onChange={event => onAction('SET_WORK_STEP', { id: task.id, stepIndex: index, stepText: text, completed: event.target.checked })} />
+        <span>{text}</span>
+      </label></li>
+    })}</ul>
+  </div>
+}
+
 export function WorkView({ userState, now = Date.now(), loading = false, busy = false, planning = false, description = '', draft = null, quickMinutes = 25, error = '', notice = '', confirmation = null, onBack = noop, onDescription = noop, onSuggest = noop, onCancelPlanning = noop, onManual = noop, onDraft = noop, onSave = noop, onCancelDraft = noop, onQuickMinutes = noop, onAction = noop, onEdit = noop, onAsk = noop, onCancelConfirm = noop }) {
   const { pet, coins, work = { tasks: [], active: null } } = userState
   const active = work.active
@@ -24,12 +41,14 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
   const openTasks = work.tasks.filter(task => !task.completedAt)
   const completedTasks = work.tasks.filter(task => task.completedAt)
   const activeTask = work.tasks.find(task => task.id === active?.taskId)
+  const remainingSteps = activeTask?.steps.filter((_, index) => !activeTask.completedSteps?.includes(index)).length ?? 0
   return <PanelScreen title="Work" coins={coins} onBack={onBack} backDisabled={busy} className="work-screen">
     {error && <p className="work-error" role="alert">{error}</p>}
     {notice && <p className="work-notice" role="status">{notice}</p>}
     {loading ? <p role="status">Loading your tasks…</p> : active && confirmation ? <section className="panel-card work-confirm" aria-label="Confirm session action">
         <h3>{confirmation === 'finish' ? 'All done?' : 'Stop for now?'}</h3>
         <p>{confirmation === 'finish' ? `Mark this task complete and collect ${coinText(earned)} and ${earned} XP.` : 'You can start again whenever you’re ready. Stopping ends this session without rewards.'}</p>
+        {confirmation === 'finish' && remainingSteps > 0 && <p className="panel-description">{`${remainingSteps} ${remainingSteps === 1 ? 'step is' : 'steps are'} still unchecked. You can keep working or finish with your saved progress.`}</p>}
         <div className="work-actions">
           <button className="work-secondary" disabled={busy} onClick={onCancelConfirm}>Keep working</button>
           <button className="panel-action" disabled={busy} onClick={() => onAction(confirmation === 'finish' ? 'FINISH_WORK' : 'STOP_WORK')}>{confirmation === 'finish' ? 'Finish & collect' : 'Stop without rewards'}</button>
@@ -42,7 +61,7 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
         <p className="work-companion">{expired ? 'How did it go? Finish up or give yourself more time.' : `${pet.name} is keeping you company. You’ve got this.`}</p>
         <div className="work-clock" role="timer" aria-label="Time remaining">{clock(active.durationSeconds - elapsed)}</div>
         <p className="panel-description">{coinText(earned)} earned so far · 1 coin + 1 XP per full minute</p>
-        {activeTask?.steps.length > 0 && <ol className="work-steps">{activeTask.steps.map((step, i) => <li key={i}>{step}</li>)}</ol>}
+        <TaskChecklist task={activeTask} disabled={busy} onAction={onAction} />
         <div className="work-actions">
           {!expired && <button className="work-secondary" disabled={busy} onClick={() => onAction(active.runningSince === null ? 'RESUME_WORK' : 'PAUSE_WORK')}>{active.runningSince === null ? 'Resume' : 'Pause'}</button>}
           <button className="work-secondary" disabled={busy || active.durationSeconds > 475 * 60} onClick={() => onAction('EXTEND_WORK', { minutes: 5 })}>Add 5 minutes</button>
@@ -79,6 +98,7 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
           <h4>{task.title}</h4>
           {task.description && <p className="panel-description">{task.description}</p>}
           <p className="work-task-meta"><FiClock aria-hidden="true" />{task.minutes} min · up to {coinText(task.minutes)}</p>
+          <TaskChecklist task={task} disabled={busy || planning} onAction={onAction} />
           <div className="work-actions">
             <button className="panel-action" disabled={busy || planning} onClick={() => onAction('START_WORK', { id: task.id })}><FiPlay aria-hidden="true" />Start task</button>
             <button className="work-icon-button" aria-label={`Edit ${task.title}`} disabled={busy || planning} onClick={() => onEdit(task)}><FiEdit2 /></button>
@@ -92,7 +112,7 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
         <label>Minutes<input required type="number" min="1" max="480" step="1" value={quickMinutes} onChange={event => onQuickMinutes(event.target.value)} /></label>
         <button className="work-secondary" disabled={busy || planning}>Start quiet work</button>
       </form>
-      {!!completedTasks.length && <details className="panel-card work-completed"><summary><FiCheckCircle aria-hidden="true" />Completed · {completedTasks.length}</summary>{completedTasks.map(task => <p key={task.id}>{task.title}</p>)}</details>}
+      {!!completedTasks.length && <details className="panel-card work-completed"><summary><FiCheckCircle aria-hidden="true" />Completed · {completedTasks.length}</summary>{completedTasks.map(task => <article className="work-completed-task" key={task.id}><h4>{task.title}</h4><TaskChecklist task={task} disabled /></article>)}</details>}
     </>}
   </PanelScreen>
 }

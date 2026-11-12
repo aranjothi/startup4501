@@ -37,3 +37,17 @@
 .home-work { position: absolute; bottom: 236px; right: 25px; display: flex; align-items: center; gap: 6px; background: #1e3a70; color: white; border: 2px solid #e7f2ff; border-radius: 12px; padding: 10px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 #142d5833; }
 .home-work:hover { background: #294e8b; }
 .home-work svg { width: 15px; height: 15px; flex-shrink: 0; }
+.work-checklist { width: 100%; text-align: left; }
+.work-checklist-count { font-size: 11px; font-weight: 600; color: #355c9f; margin-bottom: 6px; }
+.work-checklist progress { display: block; width: 100%; height: 6px; border: 0; border-radius: 99px; overflow: hidden; background: #dcecff; accent-color: #448b75; margin-bottom: 8px; }
+.work-checklist progress::-webkit-progress-bar { background: #dcecff; border-radius: 99px; }
+.work-checklist progress::-webkit-progress-value { background: #448b75; border-radius: 99px; }
+.work-checklist progress::-moz-progress-bar { background: #448b75; border-radius: 99px; }
+.work-checklist ul { list-style: none; padding: 0; margin: 0; }
+.work-checklist label { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; cursor: pointer; font-size: 12px; line-height: 1.5; }
+.work-checklist input { flex-shrink: 0; width: 17px; height: 17px; margin-top: 1px; accent-color: #448b75; cursor: pointer; }
+.work-checklist .work-step-done span { text-decoration: line-through; color: #5d7a70; }
+.work-checklist label:has(input:disabled), .work-checklist input:disabled { cursor: default; }
+.work-completed-task { padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--app-blue-border); }
+.work-completed-task h4 { font-size: 12px; margin-bottom: 8px; }
+.work-completed .work-checklist-count { margin-top: 0; }
