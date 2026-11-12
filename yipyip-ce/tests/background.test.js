@@ -76,3 +76,14 @@ test('background rejects unowned equips and applies owned equipment without spen
   assert.deepEqual(removed.payload.pet.cosmetics, {})
   assert.deepEqual(removed.payload.ownedCosmetics, ['coral-bow'])
 })
+test('work messages save reviewed tasks and serialize completion rewards exactly once', async () => {
+  const saved = await send({ type: 'SAVE_WORK_TASK', payload: { title: 'Read', description: '', minutes: 10, steps: ['Read a chapter'] } })
+  assert.ok(saved.payload?.work?.tasks?.length)
+  const id = saved.payload.work.tasks.at(-1).id
+  await send({ type: 'START_WORK', payload: { id } })
+  data.userState.work.active.runningSince = Date.now() - 120000
+  const before = data.userState.coins
+  const results = await Promise.all([send({ type: 'FINISH_WORK' }), send({ type: 'FINISH_WORK' })])
+  assert.equal(results.filter(result => !result.error).length, 1)
+  assert.equal(data.userState.coins, before + 2)
+})

@@ -37,3 +37,20 @@ test('configured shared server only accepts listed extension origins', async () 
     }
   } finally { await new Promise(resolve => server.close(resolve)) }
 })
+
+test('task planner validates descriptions and suggestions before returning an editable plan', async () => {
+  let calls = 0
+  const plan = { title: 'Clear my desk', description: 'Make room to work', minutes: 15, steps: ['Remove rubbish', 'Put supplies away'] }
+  const { server } = createServer({ planTask: async () => { calls++; return calls === 1 ? plan : { ...plan, minutes: -1 } } })
+  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve) })
+  try {
+    const url = `http://127.0.0.1:${server.address().port}/api/task-plan`
+    const post = description => fetch(url, { method: 'POST', headers: { Origin: 'http://127.0.0.1:4173', 'Content-Type': 'application/json' }, body: JSON.stringify({ description }) })
+    assert.equal((await post('')).status, 400)
+    assert.equal(calls, 0)
+    const good = await post('I need to clean my desk')
+    assert.equal(good.status, 200)
+    assert.deepEqual(await good.json(), plan)
+    assert.equal((await post('Clean my room')).status, 503)
+  } finally { await new Promise(resolve => server.close(resolve)) }
+})

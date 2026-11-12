@@ -1,3 +1,4 @@
+import { WORK_ACTIONS, workAction, importLegacyTasks } from '../work/model.js'
 import { getSession } from '../practice/sessionStore.js'
 import { rewardSession } from '../practice/rewards.js'
 import { getAttempt } from '../lessons/lessonStore.js'
@@ -11,7 +12,7 @@ const MOOD_DECAY_PER_MIN = 100 / 1440
 async function initialize() {
   await chrome.sidePanel.setOptions({ path: 'index.html', enabled: true })
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-  // Keep old task data for a future return, but retire all productivity alarms.
+  // Retire legacy alarms; new work sessions persist inside userState.work.
   await chrome.alarms.clear('taskComplete')
   await chrome.alarms.clear('uiTimerExpiry')
   await chrome.storage.local.remove(['activeTask', 'activeUITimer'])
@@ -50,6 +51,15 @@ function serialize(action) {
 
 async function handle(message) {
   const state = await getState()
+  if (message.type === 'GET_WORK' || WORK_ACTIONS.includes(message.type)) {
+    if (!state.work) {
+      const { tasks } = await chrome.storage.local.get('tasks')
+      state.work = { tasks: importLegacyTasks(tasks ?? []), active: null }
+    }
+    const next = message.type === 'GET_WORK' ? state : workAction(state, message)
+    await saveState(next)
+    return { type: 'STATE', payload: next }
+  }
   switch (message.type) {
     case 'GET_STATE':
       await saveState(state)

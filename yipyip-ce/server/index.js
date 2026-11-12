@@ -1,12 +1,14 @@
+import { validatePlan } from '../src/work/model.js'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { generateValidatedTurn, validateRequest } from './validation.js'
-import { generateTurn, evaluateTurn, transcribe } from './provider.js'
+import { generateTurn, evaluateTurn, transcribe, generateTaskPlan } from './provider.js'
 import { attachVoiceServer } from './voice.js'
 
 try { process.loadEnvFile('.env') } catch (error) { if (error.code !== 'ENOENT') throw error }
 const errors = {
-  AI_NOT_CONFIGURED: 'Conversation practice is temporarily unavailable. Please try again shortly.',
+  TASK_PLAN_FAILED: 'Couldn’t create a task suggestion. Try again or create your task manually.',
+  AI_NOT_CONFIGURED: 'AI assistance is temporarily unavailable. Please try again shortly.',
   AI_UNAVAILABLE: 'The AI service is unavailable. Check the server’s model settings, API access, or billing, then retry.',
   VALIDATION_FAILED: 'We couldn’t validate that reply and feedback. Your message is still here; please retry.',
   INVALID_CONVERSATION: 'This conversation could not be processed. Please start a new lesson.',
@@ -22,7 +24,7 @@ async function readBody(request, limit) {
   }
   return Buffer.concat(parts)
 }
-export function createServer({ allowedOrigins = process.env.YIPYIP_ALLOWED_ORIGINS?.split(',').map(value => value.trim()).filter(Boolean), generate = generateTurn, evaluate = evaluateTurn, transcription = transcribe, voiceConnect } = {}) {
+export function createServer({ allowedOrigins = process.env.YIPYIP_ALLOWED_ORIGINS?.split(',').map(value => value.trim()).filter(Boolean), generate = generateTurn, evaluate = evaluateTurn, transcription = transcribe, voiceConnect, planTask = generateTaskPlan } = {}) {
   const windows = new Map()
   const allowed = origin => allowedOrigins?.length ? allowedOrigins.includes(origin) : /^chrome-extension:\/\/[a-p]{32}$/.test(origin) || origin === 'http://127.0.0.1:4173'
   function takeRequest() {
@@ -43,6 +45,14 @@ export function createServer({ allowedOrigins = process.env.YIPYIP_ALLOWED_ORIGI
     if (request.method !== 'POST') return send(405, { error: 'Method not allowed.' })
     if (!takeRequest()) return send(429, { error: 'Please wait a moment before sending another reply.' })
     try {
+      if (request.url === '/api/task-plan') {
+        const { description } = JSON.parse((await readBody(request, 10000)).toString('utf8'))
+        if (typeof description !== 'string' || !description.trim() || description.length > 2000) return send(400, { error: 'Describe your task in 1–2000 characters.' })
+        const suggestion = await planTask({ description: description.trim() })
+        let plan
+        try { plan = validatePlan(suggestion) } catch { throw new Error('TASK_PLAN_FAILED') }
+        return send(200, plan)
+      }
       if (request.url === '/api/turn') {
         const input = validateRequest(JSON.parse((await readBody(request, 100000)).toString('utf8')))
         return send(200, await generateValidatedTurn({ ...input, generate, evaluate }))
