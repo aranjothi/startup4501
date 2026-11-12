@@ -84,9 +84,9 @@
   width: 100%;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #87afe6 transparent;
+  scrollbar-width: none;
 }
+.panel-body::-webkit-scrollbar { display: none; }
 .panel-body > * { flex-shrink: 0; }
 .panel-card {
   background: var(--app-white);
