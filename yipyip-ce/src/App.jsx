@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FiCalendar, FiClock } from 'react-icons/fi'
+import { FiCalendar, FiCheckSquare } from 'react-icons/fi'
 import './App.css'
 import './practice/Practice.css'
 import Settings from './Settings'
@@ -16,7 +16,7 @@ import ChatLesson from './lessons/ChatLesson'
 import HistoryScreen from './lessons/HistoryScreen'
 import { recommendedLesson } from './lessons/catalog.js'
 import { listCompletions } from './lessons/lessonStore.js'
-import TopicIcon from './lessons/TopicIcon'
+import TasksMenu from './tasks/TasksMenu'
 import RecommendedLesson from './lessons/RecommendedLesson'
 import './lessons/Lessons.css'
 import coinImg from './assets/ui/coin.png'
@@ -206,6 +206,7 @@ export default function App() {
     }
   }, [dragging])
   function openPractice() { setScreen('practice') }
+  function openWork() { setScreen('work') }
   function openRecording(sessionId) { setPracticeTarget({ sessionId }); setScreen('recording') }
   function closeRecording() { setScreen('history'); refresh() }
   function openLesson(lessonId, attemptId, fresh = false) {
@@ -239,9 +240,9 @@ export default function App() {
                 </svg>
                 <span className="nav-label">Shop</span>
               </button>
-              <button className="nav-btn" title="Practice" onClick={() => openPractice()}>
-                <TopicIcon topicId="everyday" />
-                <span className="nav-label">Practice</span>
+              <button className="nav-btn" title="Tasks" onClick={() => setScreen('tasks')}>
+                <FiCheckSquare aria-hidden="true" />
+                <span className="nav-label">Tasks</span>
               </button>
               <button className="nav-btn" title="History" onClick={() => setScreen('history')}>
                 <FiCalendar />
@@ -298,13 +299,13 @@ export default function App() {
               cosmetics={equippedCosmetics(userState)}
             />
           </div>
-          <button className="home-work" onClick={() => setScreen('work')}><FiClock aria-hidden="true" /><span>{userState.work?.active ? 'Resume work' : 'Work mode'}</span></button>
           <button className="home-customize" onClick={() => setScreen('customize')}><span>Customize</span></button>
       </main>
-      {screen === 'work' && <WorkScreen userState={userState} onUpdate={setUserState} onBack={() => setScreen('home')} />}
+      {screen === 'tasks' && <TasksMenu coins={coins} activeWork={userState.work?.active} onBack={() => setScreen('home')} onConversations={openPractice} onWork={openWork} />}
+      {screen === 'work' && <WorkScreen userState={userState} onUpdate={setUserState} onBack={() => setScreen('tasks')} />}
       {screen === 'welcome' && <Welcome onStart={() => setScreen('onboarding')} />}
       {['onboarding', 'survey'].includes(screen) && <Onboarding profile={userState.learningProfile} coins={coins} onBack={() => setScreen(screen === 'survey' ? surveyReturn : 'welcome')} onDone={state => { setUserState(state); setScreen('practice') }} />}
-      {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('home')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
+      {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('tasks')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
       {screen === 'lesson' && <ChatLesson key={lessonKey} {...lessonTarget} profile={userState.learningProfile} coins={coins} onBack={() => { setScreen(lessonTarget.attemptId ? 'history' : 'practice'); refresh() }} onHome={() => { setScreen('home'); refresh() }} onProgress={refresh} onRestart={id => openLesson(id, undefined, true)} />}
       {screen === 'recording' && <PracticeRoom coins={coins} initialSessionId={practiceTarget.sessionId} onClose={closeRecording} />}
       {screen === 'history' && <HistoryScreen coins={coins} completions={completions} legacySessions={sessions} onDeleted={refresh} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}

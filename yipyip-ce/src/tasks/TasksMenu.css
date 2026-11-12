@@ -1,0 +1,14 @@
+.tasks-menu-intro { padding: 2px 0 8px; }
+.tasks-menu-intro h3 { font-size: 17px; line-height: 1.4; margin-bottom: 8px; }
+.tasks-menu-option { display: flex; align-items: center; gap: 11px; width: 100%; padding: 19px 13px; border: 2px solid #bab1e4; border-radius: 16px; background: #f1edff; color: #44386e; text-align: left; font: inherit; cursor: pointer; }
+.tasks-menu-work { border-color: #a8d7c4; background: #edfaf4; color: #275c4b; }
+.tasks-menu-option:hover { filter: brightness(.98); }
+.tasks-menu-option:focus-visible { outline: 3px solid #357bd8; outline-offset: 3px; }
+.tasks-menu-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; background: #e1d9fa; }
+.tasks-menu-work .tasks-menu-icon { background: #d0eee0; }
+.tasks-menu-icon svg { width: 21px; height: 21px; }
+.tasks-menu-copy { display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+.tasks-menu-copy strong { font-size: 14px; line-height: 1.35; }
+.tasks-menu-copy small { font-size: 11px; line-height: 1.6; }
+.tasks-menu-chevron { width: 16px; height: 16px; flex-shrink: 0; margin-left: auto; }
+.tasks-menu-resume { font-size: 10px; font-weight: 700; }

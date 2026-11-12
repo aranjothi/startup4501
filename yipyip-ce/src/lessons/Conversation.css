@@ -8,7 +8,7 @@
 .conversation-avatar { width: 36px; height: 36px; border-radius: 50%; background: #d8e5ff; display: grid; place-items: center; color: #6378b2; font-size: 20px; border: 2px solid white; box-shadow: 0 2px 8px #819ac322; }
 .conversation-person strong { max-width: 100%; font-size: 11px; color: #334563; line-height: 1.3; }.conversation-person > span:last-child { font-size: 9px; color: #8490a7; }
 .conversation-header-icon { color: #8b9dc3; font-size: 21px; text-align: center; }
-.lesson-chat .panel-body { gap: 10px; overscroll-behavior: contain; padding: 0 3px 4px; }
+.lesson-chat .panel-body { gap: 10px; overscroll-behavior: contain; padding: 0 8px 4px; }
 .conversation-brief { border-radius: 13px; background: #edf0fa; padding: 9px 10px; color: #596c94; }
 .conversation-brief > summary { display: flex; align-items: center; gap: 6px; font-size: 10px; cursor: pointer; list-style: none; }.conversation-brief > summary::-webkit-details-marker { display: none; }.conversation-brief > summary > span { flex: 1; }.conversation-brief > summary > svg { flex-shrink: 0; width: 13px; height: 13px; }.conversation-brief[open] > summary > svg:last-child { transform: rotate(180deg); }
 .lesson-chat .lesson-context { margin-top: 10px; border: none; padding-left: 0; }.lesson-chat .lesson-context p { font-size: 10px; }.conversation-brief .lesson-visual-options { margin-top: 10px; border-width: 1px; background: #f5faff; border-color: #bad5f4; }
