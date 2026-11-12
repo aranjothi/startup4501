@@ -60,3 +60,22 @@
 .work-checkin p { color: #345e50; font-size: 12px; line-height: 1.6; margin-top: 7px; }
 .work-checkin .work-checkin-next { font-weight: 600; }
 .work-checkin .work-text-button { color: #356653; margin-top: 4px; }
+.work-history-link { align-self: flex-end; flex-shrink: 0; }
+.work-history .panel-title-pill { padding-inline: 12px; }
+.work-history-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-block: 26px; text-align: center; }
+.work-history-empty > svg { width: 30px; height: 30px; color: #527096; }
+.work-history-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 10px; margin-top: 14px; }
+.work-history-stats dt { font-size: 10px; color: #527096; margin-bottom: 4px; }
+.work-history-stats dd { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.work-history-list { display: flex; flex-direction: column; gap: 10px; }
+.work-history-session summary { display: flex; justify-content: space-between; align-items: center; gap: 10px; list-style: none; cursor: pointer; }
+.work-history-session summary::-webkit-details-marker { display: none; }
+.work-history-session summary > svg { width: 16px; height: 16px; flex-shrink: 0; }
+.work-history-session[open] summary > svg { transform: rotate(180deg); }
+.work-history-session-heading { display: flex; flex-direction: column; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
+.work-history-session-heading strong { font-size: 14px; }
+.work-history-session-heading time, .work-history-session-heading small { font-size: 10px; color: #527096; }
+.work-session-stats { margin-block: 14px; display: flex; flex-direction: column; gap: 7px; }
+.work-session-stats > div { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; }
+.work-session-stats dt { color: #527096; }
+.work-session-stats dd { font-weight: 600; text-align: right; }

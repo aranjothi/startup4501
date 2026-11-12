@@ -130,3 +130,20 @@ test('check-in preferences and dismissals persist without changing rewards', asy
   assert.deepEqual(loaded.payload.work.active.dismissedCheckIns, ['start'])
   assert.equal(loaded.payload.coins, before)
 })
+
+test('completed work history persists its checklist and XP; viewing it cannot grant rewards again', async () => {
+  const current = await send({ type: 'GET_WORK' })
+  if (current.payload.work.active) await send({ type: 'STOP_WORK', payload: { sessionId: current.payload.work.active.id } })
+  const saved = await send({ type: 'SAVE_WORK_TASK', payload: { title: 'History task', description: '', minutes: 10, steps: ['Read', 'Write'] } })
+  const id = saved.payload.work.tasks.at(-1).id
+  await send({ type: 'SET_WORK_STEP', payload: { id, stepIndex: 0, stepText: 'Read', completed: true } })
+  await send({ type: 'START_WORK', payload: { id } })
+  data.userState.work.active.runningSince = Date.now() - 91000
+  const completed = await send({ type: 'FINISH_WORK', payload: { sessionId: data.userState.work.active.id } })
+  const entry = completed.payload.work.history.at(-1)
+  assert.equal(entry.xp, 1)
+  assert.deepEqual(entry.checklist, { steps: ['Read', 'Write'], completedSteps: [0] })
+  const loaded = await send({ type: 'GET_WORK' })
+  assert.deepEqual(loaded.payload.work.history.at(-1), entry)
+  assert.equal(loaded.payload.coins, completed.payload.coins)
+})

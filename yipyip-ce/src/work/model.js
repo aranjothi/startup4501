@@ -119,9 +119,13 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
       if (!active) throw new Error('No session to complete.')
       const seconds = elapsedSeconds(active, now)
       const coins = Math.floor(seconds / 60)
-      const finished = { id: active.id, title: active.title, taskId: active.taskId, seconds, coins, completedAt: now }
-      work.history = [...(work.history ?? []), finished].slice(-100)
       const activeTask = work.tasks.find(item => item.id === active.taskId)
+      const checklist = activeTask ? {
+        steps: [...activeTask.steps],
+        completedSteps: activeTask.steps.flatMap((_, index) => activeTask.completedSteps?.includes(index) ? [index] : []),
+      } : null
+      const finished = { id: active.id, title: active.title, taskId: active.taskId, startedAt: active.startedAt, plannedSeconds: active.durationSeconds, seconds, coins, xp: coins, checklist, completedAt: now }
+      work.history = [...(work.history ?? []), finished].slice(-100)
       if (activeTask) activeTask.completedAt = now
       state.coins += coins
       state.pet.xp += coins

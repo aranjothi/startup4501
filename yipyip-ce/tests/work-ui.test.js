@@ -114,3 +114,28 @@ test('paused or disabled work shows no check-in, and the disabled preference is 
   html = render(props({ userState }))
   assert.doesNotMatch(html, /aria-label="Companion check-in"/)
 })
+
+test('Work exposes history even while a session is running', () => {
+  const html = render(props({ userState: { coins: 10, pet, work: { tasks: [], active: { id: 'session', title: 'Read', durationSeconds: 600, elapsedSeconds: 0, runningSince: 1000 } } } }))
+  assert.match(html, />Work history</)
+})
+test('empty Work history explains how sessions are recorded', () => {
+  const html = render(props({ view: 'history' }))
+  assert.match(html, /No completed sessions yet/)
+  assert.match(html, /Finish a work session/)
+  assert.doesNotMatch(html, /Suggest a task/)
+})
+test('Work history shows session time, saved rewards, and a read-only checklist', () => {
+  const html = render(props({ view: 'history', userState: { coins: 100, pet, work: { tasks: [], active: null, history: [
+    { id: 'old', title: 'Older quiet session', taskId: null, seconds: 65, coins: 1, completedAt: 1000 },
+    { id: 'new', title: 'Finished desk task', taskId: 'deleted-task', seconds: 90, plannedSeconds: 600, coins: 1, xp: 1, completedAt: 2000, checklist: { steps: ['Clear desk', 'Wipe desk'], completedSteps: [0] } },
+  ] } } }))
+  assert.ok(html.indexOf('Finished desk task') < html.indexOf('Older quiet session'))
+  assert.match(html, /1m 30s/)
+  assert.match(html, /10m/)
+  assert.match(html, /1 of 2 steps done/)
+  assert.match(html, /type="checkbox"[^>]*disabled=""/)
+  assert.match(html, /2 coins/)
+  assert.match(html, /2 XP/)
+  assert.doesNotMatch(html, /Finish &amp; collect/)
+})
