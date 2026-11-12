@@ -1,6 +1,8 @@
+import { checkInMilestones } from './checkIns.js'
+
 // One coin and one XP per whole minute worked, as in Dopal's basic timer.
-export const WORK_ACTIONS = ['SET_WORK_STEP', 'SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
-export const WORK_SESSION_ACTIONS = ['PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+export const WORK_ACTIONS = ['SET_WORK_CHECK_INS', 'DISMISS_WORK_CHECK_IN', 'SET_WORK_STEP', 'SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+export const WORK_SESSION_ACTIONS = ['DISMISS_WORK_CHECK_IN', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
 export const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['title', 'description', 'minutes', 'steps'],
   properties: { title: { type: 'string' }, description: { type: 'string' }, minutes: { type: 'integer' }, steps: { type: 'array', items: { type: 'string' } } },
@@ -40,6 +42,17 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
     throw new Error('This work session has changed. Reopen Work to use the current timer.')
   }
   switch (type) {
+    case 'SET_WORK_CHECK_INS':
+      if (typeof payload.enabled !== 'boolean') throw new Error('Choose whether companion check-ins are on or off.')
+      work.checkInsEnabled = payload.enabled
+      break
+    case 'DISMISS_WORK_CHECK_IN': {
+      if (!active) throw new Error('No work session to check in on.')
+      const milestone = checkInMilestones(active).find(item => item.id === payload.checkInId)
+      if (!milestone || milestone.at > elapsedSeconds(active, now)) throw new Error('This check-in is not available yet.')
+      active.dismissedCheckIns = [...new Set([...(active.dismissedCheckIns ?? []), milestone.id])]
+      break
+    }
     case 'SAVE_WORK_TASK': {
       const plan = validatePlan(payload)
       if (payload.id && (!task || task.completedAt || active?.taskId === task.id)) throw new Error('This task cannot be edited right now.')
@@ -82,7 +95,7 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
       if (payload.id && (!task || task.completedAt)) throw new Error('Choose an unfinished task.')
       const minutes = minutesValue(task ? task.minutes : payload.minutes)
       const title = task?.title ?? String(payload.title || 'Quiet work').trim().slice(0, 120)
-      work.active = { id: crypto.randomUUID(), taskId: task?.id ?? null, title, durationSeconds: minutes * 60, elapsedSeconds: 0, runningSince: now, startedAt: now }
+      work.active = { id: crypto.randomUUID(), taskId: task?.id ?? null, title, durationSeconds: minutes * 60, checkInDurationSeconds: minutes * 60, dismissedCheckIns: [], elapsedSeconds: 0, runningSince: now, startedAt: now }
       break
     }
     case 'PAUSE_WORK':
@@ -99,6 +112,7 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
       if (active.durationSeconds + payload.minutes * 60 > 480 * 60) throw new Error('Keep each session within 480 minutes.')
       active.elapsedSeconds = elapsedSeconds(active, now)
       if (active.runningSince !== null) active.runningSince = now
+      active.checkInDurationSeconds ??= active.durationSeconds
       active.durationSeconds += payload.minutes * 60
       break
     case 'FINISH_WORK': {

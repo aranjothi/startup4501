@@ -96,3 +96,21 @@ test('completed tasks show a read-only checklist and completion confirmation rep
   assert.match(html, /1 step is still unchecked/)
   assert.match(html, /Keep working/)
 })
+
+test('running work displays an accessible companion check-in with the next step and dismiss control', () => {
+  const html = render(props({ userState: { coins: 10, pet, work: { tasks: [checklistTask], active: { id: 'session', taskId: 'desk', title: 'Tidy desk', durationSeconds: 600, elapsedSeconds: 0, runningSince: 1000 } } } }))
+  assert.match(html, /aria-label="Companion check-in"/)
+  assert.match(html, /Next small step: File papers/)
+  assert.match(html, /Dismiss check-in/)
+  assert.match(html, /Companion check-ins/)
+})
+test('paused or disabled work shows no check-in, and the disabled preference is reflected', () => {
+  const userState = { coins: 10, pet, work: { checkInsEnabled: false, tasks: [], active: { id: 'session', title: 'Quiet work', durationSeconds: 600, elapsedSeconds: 60, runningSince: 1000 } } }
+  let html = render(props({ userState }))
+  assert.match(html, /Companion check-ins/)
+  assert.doesNotMatch(html, /Dismiss check-in/)
+  userState.work.checkInsEnabled = true
+  userState.work.active.runningSince = null
+  html = render(props({ userState }))
+  assert.doesNotMatch(html, /aria-label="Companion check-in"/)
+})

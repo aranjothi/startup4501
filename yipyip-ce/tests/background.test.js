@@ -113,3 +113,20 @@ test('checklist messages persist partial progress and repeated checks never pay 
   assert.deepEqual(loaded.payload.work.tasks.find(task => task.id === id).completedSteps, [0])
   assert.equal(loaded.payload.coins, before)
 })
+
+test('check-in preferences and dismissals persist without changing rewards', async () => {
+  const initial = await send({ type: 'GET_WORK' })
+  const sessionId = initial.payload.work.active.id
+  const before = initial.payload.coins
+  const off = await send({ type: 'SET_WORK_CHECK_INS', payload: { enabled: false } })
+  assert.equal(off.payload?.work.checkInsEnabled, false)
+  await send({ type: 'SET_WORK_CHECK_INS', payload: { enabled: true } })
+  const results = await Promise.all([
+    send({ type: 'DISMISS_WORK_CHECK_IN', payload: { sessionId, checkInId: 'start' } }),
+    send({ type: 'DISMISS_WORK_CHECK_IN', payload: { sessionId, checkInId: 'start' } }),
+  ])
+  assert.ok(results.every(result => !result.error))
+  const loaded = await send({ type: 'GET_WORK' })
+  assert.deepEqual(loaded.payload.work.active.dismissedCheckIns, ['start'])
+  assert.equal(loaded.payload.coins, before)
+})

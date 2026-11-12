@@ -3,6 +3,7 @@ import { FiCheckCircle, FiClock, FiEdit2, FiPlay, FiTrash2 } from 'react-icons/f
 import PanelScreen from '../components/PanelScreen'
 import PetAppearance from '../pet/PetAppearance'
 import { equippedCosmetics } from '../pet/cosmetics.js'
+import { currentCheckIn } from './checkIns.js'
 import { elapsedSeconds, validatePlan } from './model.js'
 import { sendWork, suggestTask } from './api.js'
 import './Work.css'
@@ -38,6 +39,7 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
   const elapsed = elapsedSeconds(active, now)
   const expired = !!active && elapsed >= active.durationSeconds
   const earned = Math.floor(elapsed / 60)
+  const checkIn = currentCheckIn(work, elapsed)
   const openTasks = work.tasks.filter(task => !task.completedAt)
   const completedTasks = work.tasks.filter(task => task.completedAt)
   const activeTask = work.tasks.find(task => task.id === active?.taskId)
@@ -45,6 +47,11 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
   return <PanelScreen title="Work" coins={coins} onBack={onBack} backDisabled={busy} className="work-screen">
     {error && <p className="work-error" role="alert">{error}</p>}
     {notice && <p className="work-notice" role="status">{notice}</p>}
+    {!loading && !draft && !confirmation && <label className="work-checkin-setting">
+      <input type="checkbox" checked={work.checkInsEnabled !== false} disabled={busy || planning}
+        onChange={event => onAction('SET_WORK_CHECK_INS', { enabled: event.target.checked })} />
+      <span>Companion check-ins<small>Gentle encouragement as you work</small></span>
+    </label>}
     {loading ? <p role="status">Loading your tasks…</p> : active && confirmation ? <section className="panel-card work-confirm" aria-label="Confirm session action">
         <h3>{confirmation === 'finish' ? 'All done?' : 'Stop for now?'}</h3>
         <p>{confirmation === 'finish' ? `Mark this task complete and collect ${coinText(earned)} and ${earned} XP.` : 'You can start again whenever you’re ready. Stopping ends this session without rewards.'}</p>
@@ -61,6 +68,13 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
         <p className="work-companion">{expired ? 'How did it go? Finish up or give yourself more time.' : `${pet.name} is keeping you company. You’ve got this.`}</p>
         <div className="work-clock" role="timer" aria-label="Time remaining">{clock(active.durationSeconds - elapsed)}</div>
         <p className="panel-description">{coinText(earned)} earned so far · 1 coin + 1 XP per full minute</p>
+        {checkIn && <aside className="work-checkin" role="status" aria-label="Companion check-in">
+          <span className="work-checkin-from">{pet.name} says</span>
+          <h4>{checkIn.title}</h4>
+          <p>{checkIn.message}</p>
+          {checkIn.nextStep && <p className="work-checkin-next">{`Next small step: ${checkIn.nextStep}`}</p>}
+          <button className="work-text-button" disabled={busy} onClick={() => onAction('DISMISS_WORK_CHECK_IN', { checkInId: checkIn.id })}>Dismiss check-in</button>
+        </aside>}
         <TaskChecklist task={activeTask} disabled={busy} onAction={onAction} />
         <div className="work-actions">
           {!expired && <button className="work-secondary" disabled={busy} onClick={() => onAction(active.runningSince === null ? 'RESUME_WORK' : 'PAUSE_WORK')}>{active.runningSince === null ? 'Resume' : 'Pause'}</button>}
