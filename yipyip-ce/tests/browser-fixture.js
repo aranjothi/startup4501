@@ -28,7 +28,7 @@ window.addEventListener('storage', event => {
 })
 window.chrome = {
   runtime: {
-    getURL: path => path,
+    getURL: path => new URL(path, `${location.origin}/`).href,
     sendMessage: async message => {
       let state = read()
       if (message.type === 'GET_WORK' || WORK_ACTIONS.includes(message.type)) {

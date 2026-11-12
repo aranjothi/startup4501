@@ -26,6 +26,16 @@ test('service errors keep the user in the lesson without sending them to setting
   } finally { globalThis.fetch = originalFetch }
 })
 
+test('conversation requests exclude local visual measurements and camera observations', async () => {
+  const originalFetch = globalThis.fetch
+  let sent
+  globalThis.fetch = async (url, options) => { sent = JSON.parse(options.body); return Response.json({ reply: 'Hello', feedback: { strength: 'Clear opening.' }, engagement: { latest: 'engaged', previous: 'none' }, outcome: 'continue', assessmentVersion: 2, validation: { approved: true } }) }
+  try {
+    await lessonTurn('everyday-1', [{ role: 'user', content: 'Hello', source: 'voice', visualSummary: { version: 1, faceVisiblePercent: 100 }, faceLandmarks: [[{ x: .5, y: .5 }]] }])
+    assert.deepEqual(sent.messages, [{ role: 'user', content: 'Hello', source: 'voice' }])
+  } finally { globalThis.fetch = originalFetch }
+})
+
 test('server URL accepts hosted HTTPS and loopback HTTP, but rejects credentials and unsafe URLs', () => {
   assert.equal(serverUrl(), 'http://127.0.0.1:8787')
   assert.equal(serverUrl('https://api.example.com/'), 'https://api.example.com')

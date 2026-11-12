@@ -1,8 +1,8 @@
 import { build } from 'esbuild'
 import { readFileSync, writeFileSync } from 'node:fs'
-if (process.argv.includes('--work-camera')) {
+if (process.argv.includes('--work-camera') || process.argv.includes('--visual-camera')) {
   const { build: viteBuild } = await import('vite')
-  await viteBuild({ mode: 'camera-test' })
+  await viteBuild({ mode: process.argv.includes('--visual-camera') ? 'visual-test' : 'camera-test' })
 }
 await build({ entryPoints: ['tests/browser-fixture.js'], bundle: true, format: 'iife', outfile: 'dist/test-fixture.js' })
 const html = readFileSync('dist/index.html', 'utf8').replace('<head>', '<head><script src="/test-fixture.js"></script>')

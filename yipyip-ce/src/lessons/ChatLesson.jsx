@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FiMic, FiSend, FiSquare, FiCamera, FiCameraOff, FiCheck, FiMessageSquare, FiThumbsUp, FiTarget, FiEye, FiAward, FiChevronDown, FiChevronLeft, FiInfo, FiMessageCircle } from 'react-icons/fi'
+import { FiMic, FiSend, FiSquare, FiCheck, FiMessageSquare, FiThumbsUp, FiTarget, FiAward, FiChevronDown, FiChevronLeft, FiInfo, FiMessageCircle } from 'react-icons/fi'
 import PanelScreen from '../components/PanelScreen'
 import { conversationCompletion } from '../rewards/completion.js'
 import { getLesson } from './catalog.js'
@@ -7,7 +7,9 @@ import { getAttempt, getDraft, saveAttempt } from './lessonStore.js'
 import { lessonTurn } from './api.js'
 import { useVoiceReply } from './useVoiceReply.js'
 import TopicIcon from './TopicIcon'
-import { requestMedia, mediaAccessError } from '../media/access.js'
+import { useVisualFeedback } from '../visual/useVisualFeedback.js'
+import VisualReplyFeedback from '../visual/VisualReplyFeedback'
+import VisualFeedbackControls, { VisualTrackingPreview } from '../visual/VisualFeedbackControls'
 import './Lessons.css'
 import './Conversation.css'
 import PracticePause from './PracticePause'
@@ -21,14 +23,7 @@ function ReplyFeedback({ message }) {
     <h4 className="feedback-next"><FiTarget aria-hidden="true" />Try next</h4><p>{message.feedback.improvement}</p><p>{message.feedback.suggestion}</p>
     <blockquote>“{message.feedback.evidenceQuote}”</blockquote>
     {!!fillers?.total && <div className="reply-speech-notes"><h4><FiMic aria-hidden="true" />Recognized fillers · {fillers.total}</h4><p>{Object.entries(fillers.counts).map(([word, count]) => `“${word}” × ${count}`).join(' · ')}</p><p>{fillers.total >= 3 ? 'Try a short silent pause instead of repeated fillers.' : 'Occasional fillers are natural; watch for repeated ones.'}</p></div>}
-    {message.visualDemo && <div className="visual-feedback-demo">
-      <strong className="icon-heading"><FiEye aria-hidden="true" />Body language</strong>
-      <ul>
-        <li>Your relaxed, upright posture makes you look approachable.</li>
-        <li>Your natural gestures help emphasize your ideas.</li>
-        <li>Try keeping your shoulders a little more relaxed and pausing briefly between gestures.</li>
-      </ul>
-    </div>}
+
   </div></details>
 }
 
@@ -43,22 +38,21 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
   const [loading, setLoading] = useState(true)
   const [done, setDone] = useState(false)
   const [rewarded, setRewarded] = useState(false)
-  const [visualDemo, setVisualDemo] = useState(false)
-  const [cameraOn, setCameraOn] = useState(false)
-  const [cameraPending, setCameraPending] = useState(false)
+  const [visualEnabled, setVisualEnabled] = useState(false)
+  const [cameraRequested, setCameraRequested] = useState(false)
   const [paused, setPaused] = useState(false)
   const [showPause, setShowPause] = useState(false)
   const [pauseError, setPauseError] = useState('')
   const [readId, setReadId] = useState(null)
   const responseBusy = useRef(false), voiceBase = useRef('')
-  const cameraPermission = useRef(null)
-  const request = useRef(null), end = useRef(null), camera = useRef(null), cameraStream = useRef(null), mounted = useRef(false), cameraGeneration = useRef(0)
+  const request = useRef(null), end = useRef(null), mounted = useRef(false)
   const lesson = getLesson(attempt?.lessonId ?? lessonId)
+  const visual = useVisualFeedback(visualEnabled && cameraRequested && !attemptId && !done && !paused)
   const voice = useVoiceReply((value, final) => {
     const draft = [voiceBase.current, value].filter(Boolean).join(' ')
     setText(draft); setSource('voice')
-    if (final) submitContent(draft, 'voice')
-  })
+    if (final) submitContent(draft, 'voice', visual.takeSummary())
+  }, { onStatus: visual.onVoiceStatus })
   const readOnly = !!attemptId
   const { engagedReplies: accepted, totalReplies, canComplete } = lessonProgress(messages, lesson?.requiredReplies, paused)
   const failed = messages.at(-1)?.role === 'user' && !messages.at(-1).validated
@@ -84,7 +78,7 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
       finally { if (!cancelled) setLoading(false) }
     }
     load()
-    return () => { cancelled = true; mounted.current = false; request.current?.abort(); cameraPermission.current?.abort(); cameraGeneration.current++; cameraStream.current?.getTracks().forEach(track => track.stop()) }
+    return () => { cancelled = true; mounted.current = false; request.current?.abort() }
   }, [lessonId, attemptId, fresh])
   useEffect(() => { end.current?.scrollIntoView({ block: 'end', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }) }, [messages.length, pending])
   useEffect(() => {
@@ -98,27 +92,6 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
     const timer = setTimeout(() => setShowPause(true), 650)
     return () => clearTimeout(timer)
   }, [paused, readOnly])
-  useEffect(() => {
-    if (!visualDemo) {
-      cameraPermission.current?.abort(); cameraGeneration.current++
-      cameraStream.current?.getTracks().forEach(track => track.stop()); cameraStream.current = null
-      setCameraOn(false); setCameraPending(false)
-    }
-  }, [visualDemo])
-  async function toggleCamera() {
-    if (cameraOn) { cameraPermission.current?.abort(); cameraGeneration.current++; cameraStream.current?.getTracks().forEach(track => track.stop()); cameraStream.current = null; setCameraOn(false); return }
-    const generation = ++cameraGeneration.current
-    setCameraPending(true)
-    cameraPermission.current?.abort(); cameraPermission.current = new AbortController()
-    try {
-      const stream = await requestMedia({ video: { width: { ideal: 320 }, height: { ideal: 240 } }, audio: false }, { signal: cameraPermission.current.signal })
-      if (!mounted.current || generation !== cameraGeneration.current) { stream.getTracks().forEach(track => track.stop()); return }
-      cameraStream.current = stream
-      if (camera.current) { camera.current.srcObject = stream; await camera.current.play() }
-      setCameraOn(true)
-    } catch (err) { if (mounted.current && generation === cameraGeneration.current) setError(mediaAccessError(err, 'Camera')) }
-    finally { if (mounted.current && generation === cameraGeneration.current) setCameraPending(false) }
-  }
   async function getResponse(nextMessages) {
     if (!attempt || responseBusy.current || paused) return
     responseBusy.current = true
@@ -134,14 +107,14 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
       const saved = await saveAttempt({ ...attempt, messages: next, paused: stalled })
       if (!mounted.current) return
       setMessages(next); setAttempt(saved); setPaused(stalled)
-      if (stalled) { cameraPermission.current?.abort(); cameraGeneration.current++; cameraStream.current?.getTracks().forEach(track => track.stop()); cameraStream.current = null; setCameraOn(false) }
+      if (stalled) setCameraRequested(false)
     } catch (err) { if (mounted.current) setError(err.message) }
     finally { responseBusy.current = false; if (mounted.current) setPending(false) }
   }
-  function submitContent(content, replySource) {
+  function submitContent(content, replySource, visualSummary = null) {
     if (!content.trim() || responseBusy.current || failed || done || paused || finishing || readOnly || totalReplies >= 8) return
     if (content.length > 1500) { setError('Shorten your reply to 1,500 characters before sending.'); return }
-    const next = [...messages, { id: crypto.randomUUID(), role: 'user', content: content.trim(), source: replySource, visualDemo, validated: false }]
+    const next = [...messages, { id: crypto.randomUUID(), role: 'user', content: content.trim(), source: replySource, ...(replySource === 'voice' && visualSummary ? { visualSummary } : {}), validated: false }]
     setMessages(next); setText(''); setSource('typed'); getResponse(next)
   }
   function send(event) {
@@ -164,7 +137,7 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
     try {
       const completed = await saveAttempt({ ...attempt, messages }, true)
       setAttempt(completed); setDone(true)
-      voice.cancel(); cameraPermission.current?.abort(); cameraGeneration.current++; cameraStream.current?.getTracks().forEach(track => track.stop()); cameraStream.current = null; setCameraOn(false)
+      voice.cancel(); setCameraRequested(false)
       const result = await chrome.runtime.sendMessage({ type: 'COMPLETE_LESSON', payload: { attemptId: completed.id } })
       if (result.error) throw new Error(result.error)
       if (!mounted.current) return
@@ -183,6 +156,7 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
   const footer = !loading && lesson && <>
     {error && <div className="lesson-error" role="alert"><p>{error}</p></div>}
     {voice.error && <p className="lesson-error" role="alert">{voice.error}</p>}
+    {!readOnly && !done && !paused && <VisualTrackingPreview enabled={visualEnabled} cameraRequested={cameraRequested} onCameraToggle={() => setCameraRequested(value => !value)} visual={visual} />}
     {paused && !readOnly ? <div className="paused-footer"><FiMessageCircle aria-hidden="true" /><span>This practice conversation paused.</span><button className="lesson-text-button" onClick={() => setShowPause(true)}>See what happened</button></div> : done || readOnly ? <div className="lesson-finished"><span><FiCheck /> Lesson completed{rewarded ? ' · +10 coins, +30 XP' : ''}</span>{!rewarded && !readOnly && <button className="panel-action lesson-wide" disabled={finishing} onClick={finish}>Collect reward</button>}<button className="panel-action lesson-wide" onClick={() => onRestart(lesson.id)}>Practice again</button></div> : <>
       {canComplete && <button className="panel-action lesson-wide" disabled={pending || failed || finishing || voiceBusy} onClick={finish}><FiAward aria-hidden="true" />{finishing ? 'Saving…' : 'Complete lesson · +10 coins'}</button>}
       {failed && !pending && <div className="failed-reply"><button className="panel-action" onClick={() => getResponse(messages)}>Retry reply</button><button className="lesson-text-button" onClick={editFailed}>Edit message</button></div>}
@@ -212,13 +186,15 @@ export default function ChatLesson({ lessonId, attemptId, coins, profile, onBack
       <details className="conversation-brief"><summary><FiInfo aria-hidden="true" /><span>{lesson.title}</span><FiChevronDown aria-hidden="true" /></summary>
         <div className="lesson-context"><p>{lesson.goal}</p><span>{Math.min(accepted, lesson.requiredReplies)} / {lesson.requiredReplies} engaged replies</span></div>
         {!readOnly && !done && !paused && <button className="lesson-text-button" disabled={pending || voiceBusy || finishing} onClick={retryPractice}>Restart lesson</button>}
-        {!readOnly && !done && !paused && <details className="lesson-visual-options"><summary><FiEye aria-hidden="true" />Body language <span>(optional)</span></summary><label className="demo-opt-in"><input type="checkbox" checked={visualDemo} onChange={event => setVisualDemo(event.target.checked)} />Include body language feedback</label>{visualDemo && <><div className={`lesson-camera ${cameraOn ? 'active' : ''}`}><video ref={camera} autoPlay muted playsInline aria-label="Optional camera preview" /></div><button className="lesson-text-button" disabled={cameraPending} onClick={toggleCamera}>{cameraOn ? <FiCameraOff /> : <FiCamera />}{cameraPending ? 'Opening camera…' : cameraOn ? 'Camera off' : 'Camera preview'}</button></>}</details>}
+
       </details>
+      {!readOnly && !done && !paused && <VisualFeedbackControls enabled={visualEnabled} onEnabled={value => { setVisualEnabled(value); setCameraRequested(value) }} />}
       <div className="conversation-day">{readOnly ? 'Your conversation' : 'Today · a little practice goes a long way'}</div>
       <div className="chat-messages">{messages.map((message, index) => <div key={message.id} className={`chat-message ${message.role}`}>
         <span className="message-author">{message.role === 'assistant' ? lesson.partnerName : message.source === 'voice' ? 'You · Voice' : 'You'}</span>
         <p className="message-bubble">{message.content}</p>
         {message.role === 'user' && index === messages.length - (messages.at(-1)?.role === 'assistant' ? 2 : 1) && <span className="message-receipt">{message.validated || readId === message.id ? 'Read' : pending ? 'Delivered' : 'Retry needed'}</span>}
+        {message.role === 'user' && message.source === 'voice' && <VisualReplyFeedback summary={message.visualSummary} />}
         {message.role === 'user' && message.validated && message.feedback && <ReplyFeedback message={message} />}
         {message.outcome === 'warning' && <p className="conversation-nudge">Let’s bring it back to the conversation. Check your feedback for a tip.</p>}
       </div>)}{pending && <div className="typing-indicator" role="status" aria-label="Practice partner is typing"><i /><i /><i /></div>}</div><div ref={end} />
