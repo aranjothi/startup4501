@@ -40,3 +40,17 @@ test('work actions surface worker errors and return authoritative state', async 
     await assert.rejects(api.sendWork('START_WORK'), /Finish your session first/)
   } finally { globalThis.chrome = original }
 })
+test('timer controls include the session shown on screen, and reject missing session IDs', async () => {
+  const original = globalThis.chrome
+  const calls = []
+  try {
+    globalThis.chrome = { runtime: { sendMessage: async message => {
+      calls.push(message)
+      return { payload: { coins: 10 } }
+    } } }
+    await api.sendWork('PAUSE_WORK', {}, 'visible-session')
+    assert.equal(calls[0].payload.sessionId, 'visible-session')
+    await assert.rejects(api.sendWork('FINISH_WORK'), /session/)
+    assert.equal(calls.length, 1)
+  } finally { globalThis.chrome = original }
+})

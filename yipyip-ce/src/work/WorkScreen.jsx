@@ -130,7 +130,7 @@ export default function WorkScreen({ userState, onUpdate, onBack }) {
     if (mutationRef.current) return false
     mutationRef.current = true; setBusy(true); setError(''); setNotice('')
     try {
-      const state = await sendWork(type, payload)
+      const state = await sendWork(type, payload, userState.work?.active?.id)
       if (!mounted.current) return false
       onUpdate(state); setNow(Date.now()); setConfirmation(null)
       if (type === 'FINISH_WORK') {

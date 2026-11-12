@@ -1,5 +1,6 @@
 // One coin and one XP per whole minute worked, as in Dopal's basic timer.
 export const WORK_ACTIONS = ['SAVE_WORK_TASK', 'DELETE_WORK_TASK', 'START_WORK', 'PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
+export const WORK_SESSION_ACTIONS = ['PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']
 export const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['title', 'description', 'minutes', 'steps'],
   properties: { title: { type: 'string' }, description: { type: 'string' }, minutes: { type: 'integer' }, steps: { type: 'array', items: { type: 'string' } } },
@@ -35,6 +36,9 @@ export function workAction(original, { type, payload = {} }, now = Date.now()) {
   const work = state.work
   const task = work.tasks.find(item => item.id === payload.id)
   const active = work.active
+  if (active && WORK_SESSION_ACTIONS.includes(type) && payload.sessionId !== active.id) {
+    throw new Error('This work session has changed. Reopen Work to use the current timer.')
+  }
   switch (type) {
     case 'SAVE_WORK_TASK': {
       const plan = validatePlan(payload)

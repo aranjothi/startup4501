@@ -83,7 +83,21 @@ test('work messages save reviewed tasks and serialize completion rewards exactly
   await send({ type: 'START_WORK', payload: { id } })
   data.userState.work.active.runningSince = Date.now() - 120000
   const before = data.userState.coins
-  const results = await Promise.all([send({ type: 'FINISH_WORK' }), send({ type: 'FINISH_WORK' })])
+  const payload = { sessionId: data.userState.work.active.id }
+  const results = await Promise.all([send({ type: 'FINISH_WORK', payload }), send({ type: 'FINISH_WORK', payload })])
   assert.equal(results.filter(result => !result.error).length, 1)
   assert.equal(data.userState.coins, before + 2)
+})
+
+test('a delayed completion cannot finish a replacement work session', async () => {
+  const first = await send({ type: 'START_WORK', payload: { title: 'First session', minutes: 10 } })
+  const oldId = first.payload.work.active.id
+  await send({ type: 'STOP_WORK', payload: { sessionId: oldId } })
+  const second = await send({ type: 'START_WORK', payload: { title: 'New session', minutes: 20 } })
+  const newId = second.payload.work.active.id
+  const coins = second.payload.coins
+  const delayed = await send({ type: 'FINISH_WORK', payload: { sessionId: oldId } })
+  assert.match(delayed.error, /session has changed/)
+  assert.equal(data.userState.work.active.id, newId)
+  assert.equal(data.userState.coins, coins)
 })

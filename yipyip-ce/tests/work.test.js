@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import * as work from '../src/work/model.js'
 const base = () => ({ coins: 10, pet: { level: 1, xp: 95, mood: 80 }, work: { tasks: [], active: null } })
 const draft = { title: 'Clean my room', description: 'Start small', minutes: 20, steps: ['Clear desk', 'Put clothes away'] }
-const act = (state, type, payload, now = 1000) => work.workAction(state, { type, payload }, now)
+const act = (state, type, payload, now = 1000) => work.workAction(state, { type, payload: { sessionId: state.work?.active?.id, ...payload } }, now)
 
 test('task suggestions require a useful title, bounded estimate and editable steps', () => {
   assert.deepEqual(work.validatePlan(draft), draft)
@@ -64,4 +64,23 @@ test('legacy Dopal tasks retain their titles and durations', () => {
   const tasks = work.importLegacyTasks([{ id: 'old', title: 'Read', type: 'task', timeAllotted: '00:15:00' }, { id: 'session', title: 'Study', type: 'session', breaks: true, studyInterval: 25, numIntervals: 4 }])
   assert.equal(tasks[0].minutes, 15)
   assert.equal(tasks[1].minutes, 100)
+})
+
+test('commands from an old Work screen cannot change or reward a newer session', () => {
+  let state = act(base(), 'START_WORK', { title: 'First', minutes: 10 })
+  const oldSessionId = state.work.active.id
+  state = act(state, 'STOP_WORK', { sessionId: oldSessionId }, 61000)
+  state = act(state, 'START_WORK', { title: 'Second', minutes: 10 }, 62000)
+  const before = structuredClone(state)
+  for (const type of ['PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']) {
+    assert.throws(() => act(state, type, { sessionId: oldSessionId, minutes: 5 }, 122000), /session has changed/)
+    assert.deepEqual(state, before)
+  }
+})
+
+test('unscoped timer commands cannot change an active session', () => {
+  const state = act(base(), 'START_WORK', { title: 'Read', minutes: 10 })
+  for (const type of ['PAUSE_WORK', 'RESUME_WORK', 'EXTEND_WORK', 'FINISH_WORK', 'STOP_WORK']) {
+    assert.throws(() => work.workAction(state, { type, payload: { minutes: 5 } }, 61000), /session has changed/)
+  }
 })
