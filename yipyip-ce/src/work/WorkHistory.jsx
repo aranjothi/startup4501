@@ -1,15 +1,14 @@
 import { FiChevronDown, FiClock } from 'react-icons/fi'
-import PanelScreen from '../components/PanelScreen'
+import './Work.css'
 import TaskChecklist from './TaskChecklist'
 import { listWorkHistory, summarizeWorkHistory, formatWorkDuration } from './history.js'
 
-export default function WorkHistory({ work, coins, onBack, loading = false, error = '' }) {
+export default function WorkHistory({ work = { tasks: [], active: null } }) {
   const entries = listWorkHistory(work)
   const totals = summarizeWorkHistory(entries)
-  return <PanelScreen title="Work history" coins={coins} onBack={onBack} className="work-screen work-history">
-    {error && <p className="work-error" role="alert">{error}</p>}
-    {work.active && <p className="panel-description" role="status">{work.active.runningSince === null ? 'Your session is paused. Go back to return to your timer.' : 'Your session is still running. Go back to return to your timer.'}</p>}
-    {loading ? <p role="status">Loading your work history…</p> : !entries.length ? <section className="panel-card work-history-empty">
+  return <div className="work-history-content">
+    {work.active && <p className="panel-description" role="status">{work.active.runningSince === null ? 'Your work session is paused.' : 'Your work session is still running.'}</p>}
+    {!entries.length ? <section className="panel-card work-history-empty">
       <FiClock aria-hidden="true" />
       <h3>No completed sessions yet</h3>
       <p className="panel-description">Finish a work session to see your time, checklist progress, and rewards here.</p>
@@ -40,5 +39,5 @@ export default function WorkHistory({ work, coins, onBack, loading = false, erro
         </details>)}
       </section>
     </>}
-  </PanelScreen>
+  </div>
 }

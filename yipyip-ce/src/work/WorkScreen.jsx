@@ -4,7 +4,6 @@ import PanelScreen from '../components/PanelScreen'
 import PetAppearance from '../pet/PetAppearance'
 import { equippedCosmetics } from '../pet/cosmetics.js'
 import TaskChecklist from './TaskChecklist'
-import WorkHistory from './WorkHistory'
 import { currentCheckIn } from './checkIns.js'
 import { elapsedSeconds, validatePlan } from './model.js'
 import { sendWork, suggestTask } from './api.js'
@@ -19,7 +18,7 @@ function clock(seconds) {
 const coinText = coins => `${coins} ${coins === 1 ? 'coin' : 'coins'}`
 
 
-export function WorkView({ userState, now = Date.now(), loading = false, busy = false, planning = false, description = '', draft = null, quickMinutes = 25, error = '', notice = '', confirmation = null, view = 'work', onHistory = noop, onWork = noop, onBack = noop, onDescription = noop, onSuggest = noop, onCancelPlanning = noop, onManual = noop, onDraft = noop, onSave = noop, onCancelDraft = noop, onQuickMinutes = noop, onAction = noop, onEdit = noop, onAsk = noop, onCancelConfirm = noop }) {
+export function WorkView({ userState, now = Date.now(), loading = false, busy = false, planning = false, description = '', draft = null, quickMinutes = 25, error = '', notice = '', confirmation = null, onBack = noop, onDescription = noop, onSuggest = noop, onCancelPlanning = noop, onManual = noop, onDraft = noop, onSave = noop, onCancelDraft = noop, onQuickMinutes = noop, onAction = noop, onEdit = noop, onAsk = noop, onCancelConfirm = noop }) {
   const { pet, coins, work = { tasks: [], active: null } } = userState
   const active = work.active
   const elapsed = elapsedSeconds(active, now)
@@ -30,11 +29,9 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
   const completedTasks = work.tasks.filter(task => task.completedAt)
   const activeTask = work.tasks.find(task => task.id === active?.taskId)
   const remainingSteps = activeTask?.steps.filter((_, index) => !activeTask.completedSteps?.includes(index)).length ?? 0
-  if (view === 'history') return <WorkHistory work={work} coins={coins} onBack={onWork} loading={loading} error={error} />
   return <PanelScreen title="Work" coins={coins} onBack={onBack} backDisabled={busy} className="work-screen">
     {error && <p className="work-error" role="alert">{error}</p>}
     {notice && <p className="work-notice" role="status">{notice}</p>}
-    {!draft && !confirmation && <button className="work-secondary work-history-link" disabled={loading || busy || planning} onClick={onHistory}><FiClock aria-hidden="true" /><span>Work history</span></button>}
     {!loading && !draft && !confirmation && <label className="work-checkin-setting">
       <input type="checkbox" checked={work.checkInsEnabled !== false} disabled={busy || planning}
         onChange={event => onAction('SET_WORK_CHECK_INS', { enabled: event.target.checked })} />
@@ -120,7 +117,6 @@ export function WorkView({ userState, now = Date.now(), loading = false, busy = 
 }
 
 export default function WorkScreen({ userState, onUpdate, onBack }) {
-  const [view, setView] = useState('work')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [planning, setPlanning] = useState(false)
@@ -184,7 +180,7 @@ export default function WorkScreen({ userState, onUpdate, onBack }) {
       if (await action('SAVE_WORK_TASK', { ...data, ...(draft.id ? { id: draft.id } : {}) })) { setDraft(null); setDescription(''); setNotice('Task saved. Ready when you are!') }
     } catch (err) { setError(err.message) }
   }
-  return <WorkView view={view} onHistory={() => setView('history')} onWork={() => setView('work')} userState={userState} now={now} loading={loading} busy={busy} planning={planning} description={description} draft={draft} quickMinutes={quickMinutes} error={error} notice={notice} confirmation={confirmation}
+  return <WorkView userState={userState} now={now} loading={loading} busy={busy} planning={planning} description={description} draft={draft} quickMinutes={quickMinutes} error={error} notice={notice} confirmation={confirmation}
     onBack={onBack} onDescription={setDescription} onSuggest={plan} onCancelPlanning={cancelPlan}
     onManual={() => { setError(''); setDraft({ title: description.trim().slice(0, 120), description: '', minutes: 25, steps: [] }) }}
     onDraft={patch => setDraft(current => ({ ...current, ...patch }))} onSave={save} onCancelDraft={() => { setDraft(null); setError('') }} onQuickMinutes={setQuickMinutes}

@@ -2,6 +2,12 @@ export function localDayKey(value = new Date()) {
   const date = new Date(value)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
+export function dailyGoalProgress(completed, goal = 1) {
+  const target = Number.isInteger(goal) && goal > 0 ? goal : 1
+  const count = Number.isFinite(completed) ? Math.max(0, Math.floor(completed)) : 0
+  const remaining = Math.max(0, target - count)
+  return { completed: count, goal: target, remaining, fraction: Math.min(1, count / target), caption: `${remaining} ${remaining === 1 ? 'lesson' : 'lessons'} to go` }
+}
 export function dailyGoalStatus(completed, goal = 1) {
   const remaining = Math.max(0, goal - completed)
   const message = remaining ? `${remaining} ${remaining === 1 ? 'lesson' : 'lessons'} to go` : 'Goal complete!'

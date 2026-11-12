@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { FiChevronLeft, FiChevronRight, FiZap, FiCalendar, FiAward, FiVideo, FiTrash2 } from 'react-icons/fi'
 import PanelScreen from '../components/PanelScreen'
 import { getLesson, getTopic } from './catalog.js'
@@ -8,8 +8,22 @@ import TopicIcon from './TopicIcon'
 import './Lessons.css'
 import { deleteAttempt } from './lessonStore.js'
 import DeleteConversationDialog from './DeleteConversationDialog'
+import WorkHistory from '../work/WorkHistory'
 
-export default function HistoryScreen({ coins, completions, legacySessions, onBack, onAttempt, onRecording, onDeleted }) {
+export default function HistoryScreen({ coins, completions = [], legacySessions = [], work, initialSection = 'conversations', onBack, onAttempt, onRecording, onDeleted }) {
+  const [section, setSection] = useState(initialSection === 'work' ? 'work' : 'conversations')
+  const historyId = useId()
+  const tabRefs = useRef({})
+  function navigateTabs(event) {
+    let next
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') next = section === 'conversations' ? 'work' : 'conversations'
+    else if (event.key === 'Home') next = 'conversations'
+    else if (event.key === 'End') next = 'work'
+    else return
+    event.preventDefault()
+    setSection(next)
+    tabRefs.current[next]?.focus()
+  }
   const today = new Date()
   const [month, setMonth] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [selected, setSelected] = useState(() => localDayKey(today))
@@ -38,7 +52,15 @@ export default function HistoryScreen({ coins, completions, legacySessions, onBa
     finally { setDeleting(false) }
   }
   const deleteTitle = getLesson(pendingDelete?.lessonId)?.title ?? 'Conversation lesson'
-  return <PanelScreen title="History" coins={coins} onBack={onBack} backDisabled={deleting} overlay={pendingDelete && <DeleteConversationDialog title={deleteTitle} busy={deleting} error={deleteError} onCancel={cancelDelete} onConfirm={confirmDelete} />}>
+  return <PanelScreen title="History" className="history-screen" coins={coins} onBack={onBack} backDisabled={deleting} overlay={pendingDelete && <DeleteConversationDialog title={deleteTitle} busy={deleting} error={deleteError} onCancel={cancelDelete} onConfirm={confirmDelete} />}>
+    <div className="history-tabs" role="tablist" aria-label="History categories">
+      {['conversations', 'work'].map(value => <button key={value} type="button" role="tab" aria-selected={section === value}
+        id={`${historyId}-${value}-tab`} aria-controls={`${historyId}-${value}-panel`} tabIndex={section === value ? 0 : -1}
+        ref={element => { tabRefs.current[value] = element }} disabled={deleting} onKeyDown={navigateTabs} onClick={() => setSection(value)}>{value === 'conversations' ? 'Conversations' : 'Work'}</button>)}
+    </div>
+    {section === 'work' ? <div className="history-tabpanel work-screen work-history" role="tabpanel" id={`${historyId}-work-panel`} aria-labelledby={`${historyId}-work-tab`} tabIndex={0}>
+      <WorkHistory work={work} />
+    </div> : <div className="history-tabpanel" role="tabpanel" id={`${historyId}-conversations-panel`} aria-labelledby={`${historyId}-conversations-tab`} tabIndex={0}>
     <div className="history-stats">
       <div className="panel-card streak-stat"><span className="history-stat-icon"><FiZap aria-hidden="true" /></span><strong>{stats.current}</strong><span>day streak</span></div>
       <div className="panel-card small-stat practiced-stat"><FiCalendar className="history-corner-icon" aria-hidden="true" /><strong>{stats.daysPracticed}</strong><span>Days practiced</span></div>
@@ -65,5 +87,6 @@ export default function HistoryScreen({ coins, completions, legacySessions, onBa
       })}
     </section>
     {legacySessions?.length > 0 && <details className="panel-card legacy-history"><summary className="icon-heading"><FiVideo aria-hidden="true" />Earlier recordings</summary>{legacySessions.map(session => <button className="lesson-row" key={session.id} onClick={() => onRecording(session.id)}><span><strong>{getScenario(session.scenarioId).title}</strong><small>{new Date(session.createdAt).toLocaleDateString()} · {formatTime(session.duration)}</small></span><FiChevronRight /></button>)}</details>}
+    </div>}
   </PanelScreen>
 }

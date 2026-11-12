@@ -308,7 +308,7 @@ export default function App() {
       {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('tasks')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
       {screen === 'lesson' && <ChatLesson key={lessonKey} {...lessonTarget} profile={userState.learningProfile} coins={coins} onBack={() => { setScreen(lessonTarget.attemptId ? 'history' : 'practice'); refresh() }} onHome={() => { setScreen('home'); refresh() }} onProgress={refresh} onRestart={id => openLesson(id, undefined, true)} />}
       {screen === 'recording' && <PracticeRoom coins={coins} initialSessionId={practiceTarget.sessionId} onClose={closeRecording} />}
-      {screen === 'history' && <HistoryScreen coins={coins} completions={completions} legacySessions={sessions} onDeleted={refresh} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}
+      {screen === 'history' && <HistoryScreen coins={coins} work={userState.work} completions={completions} legacySessions={sessions} onDeleted={refresh} onBack={() => setScreen('home')} onAttempt={id => openLesson(null, id)} onRecording={openRecording} />}
       {screen === 'settings' && <Settings userState={userState} onClose={() => setScreen(settingsReturn)} onPreferences={() => openSurvey('settings')} onApply={state => { setUserState(state); setScreen(settingsReturn) }} />}
       {screen === 'customize' && <Customize userState={userState} onClose={() => setScreen('home')} onUpdate={setUserState} />}
       {screen === 'shop' && <Shop userState={userState} onClose={() => setScreen('home')} onUpdate={setUserState} />}

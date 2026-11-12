@@ -57,8 +57,6 @@
 .work-checkin p { color: #345e50; font-size: 12px; line-height: 1.6; margin-top: 7px; }
 .work-checkin .work-checkin-next { font-weight: 600; }
 .work-checkin .work-text-button { color: #356653; margin-top: 4px; }
-.work-history-link { align-self: flex-end; flex-shrink: 0; }
-.work-history .panel-title-pill { padding-inline: 12px; }
 .work-history-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-block: 26px; text-align: center; }
 .work-history-empty > svg { width: 30px; height: 30px; color: #527096; }
 .work-history-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 10px; margin-top: 14px; }
@@ -76,3 +74,5 @@
 .work-session-stats > div { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; }
 .work-session-stats dt { color: #527096; }
 .work-session-stats dd { font-weight: 600; text-align: right; }
+
+.work-history-content { display: flex; flex-direction: column; gap: 10px; }
