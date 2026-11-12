@@ -1,4 +1,5 @@
 // Local UI test harness only: synthetic media and Chrome APIs, never shipped.
+import { WORK_ACTIONS, workAction } from '../src/work/model.js'
 import { getSession } from '../src/practice/sessionStore.js'
 import { rewardSession } from '../src/practice/rewards.js'
 import { getAttempt } from '../src/lessons/lessonStore.js'
@@ -6,12 +7,13 @@ import { rewardLesson } from '../src/lessons/rewards.js'
 import { getLesson, validateProfile } from '../src/lessons/catalog.js'
 import { buyCosmetic, equipCosmetic } from '../src/pet/cosmetics.js'
 import { conversationOutcome } from '../src/lessons/engagement.js'
+const workFixture = new URLSearchParams(window.location.search).has('work')
 const cosmeticFixture = new URLSearchParams(window.location.search).get('cosmetics')
-const stateKey = cosmeticFixture ? `yipyip-cosmetics-test-${cosmeticFixture}` : 'yipyip-lessons-test-state'
+const stateKey = workFixture ? 'yipyip-work-test-state' : cosmeticFixture ? `yipyip-cosmetics-test-${cosmeticFixture}` : 'yipyip-lessons-test-state'
 const listeners = new Set()
 const read = () => JSON.parse(localStorage.getItem(stateKey) || 'null') ?? {
   id: 'browser-test', coins: cosmeticFixture === 'unlocked' ? 100 : 0, treats: 0, rewardedSessionIds: [],
-  ...(cosmeticFixture ? { learningProfile: { topics: ['everyday'], confidence: 'starting', dailyGoal: 1 } } : {}),
+  ...((cosmeticFixture || workFixture) ? { learningProfile: { topics: ['everyday'], confidence: 'starting', dailyGoal: 1 } } : {}),
   pet: { name: 'Pal', level: cosmeticFixture === 'unlocked' ? 4 : 1, xp: 0, hunger: 70, mood: 85, lastActiveAt: Date.now(), lastDecayAt: Date.now() },
 }
 function write(state) {
@@ -27,6 +29,14 @@ window.chrome = {
     getURL: path => path,
     sendMessage: async message => {
       let state = read()
+      if (message.type === 'GET_WORK' || WORK_ACTIONS.includes(message.type)) {
+        try {
+          state.work ??= { tasks: [], active: null }
+          state = message.type === 'GET_WORK' ? state : workAction(state, message)
+          write(state)
+          return { payload: state }
+        } catch (error) { return { error: error.message } }
+      }
       if (message.type === 'COMPLETE_PRACTICE') {
         const result = rewardSession(state, await getSession(message.payload.sessionId))
         state = result.state
@@ -65,6 +75,10 @@ window.chrome = {
 }
 const originalFetch = window.fetch.bind(window)
 window.fetch = async (url, options) => {
+  if (String(url) === 'http://127.0.0.1:8787/api/task-plan') {
+    if (params.has('planfail')) return Response.json({ error: 'Task suggestions are temporarily unavailable.' }, { status: 503 })
+    return Response.json({ title: 'Tidy my room', description: 'Make a little space to feel good in.', minutes: 20, steps: ['Clear the desk', 'Put clothes away', 'Take out rubbish'] })
+  }
   if (String(url) === 'http://127.0.0.1:8787/api/turn') {
     const { lessonId, messages } = JSON.parse(options.body)
     const lesson = getLesson(lessonId)

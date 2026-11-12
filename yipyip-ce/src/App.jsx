@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { FiCalendar } from 'react-icons/fi'
+import { FiCalendar, FiClock } from 'react-icons/fi'
 import './App.css'
 import './practice/Practice.css'
 import Settings from './Settings'
+import WorkScreen from './work/WorkScreen'
 import Shop from './Shop'
 import Customize from './pet/Customize'
 import PetAppearance, { getPetImage as getMoodImage } from './pet/PetAppearance'
@@ -297,8 +298,10 @@ export default function App() {
               cosmetics={equippedCosmetics(userState)}
             />
           </div>
+          <button className="home-work" onClick={() => setScreen('work')}><FiClock aria-hidden="true" /><span>{userState.work?.active ? 'Resume work' : 'Work mode'}</span></button>
           <button className="home-customize" onClick={() => setScreen('customize')}><span>Customize</span></button>
       </main>
+      {screen === 'work' && <WorkScreen userState={userState} onUpdate={setUserState} onBack={() => setScreen('home')} />}
       {screen === 'welcome' && <Welcome onStart={() => setScreen('onboarding')} />}
       {['onboarding', 'survey'].includes(screen) && <Onboarding profile={userState.learningProfile} coins={coins} onBack={() => setScreen(screen === 'survey' ? surveyReturn : 'welcome')} onDone={state => { setUserState(state); setScreen('practice') }} />}
       {screen === 'practice' && <LessonFeed profile={userState.learningProfile} completions={completions} coins={coins} onBack={() => setScreen('home')} onLesson={openLesson} onPreferences={() => openSurvey('practice')} />}
